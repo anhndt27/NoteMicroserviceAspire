@@ -1,0 +1,6 @@
+@NoteMicroservice.MinimalApi_HostAddress = http://localhost:5084
+
+GET {{NoteMicroservice.MinimalApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

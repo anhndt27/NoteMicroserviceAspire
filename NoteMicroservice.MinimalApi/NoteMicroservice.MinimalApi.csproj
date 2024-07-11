@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="MMLib.SwaggerForOcelot" Version="8.2.0" />
+    <PackageReference Include="Ocelot" Version="23.2.2" />
+	  <PackageReference Include="Ocelot.Provider.Polly" Version="23.2.2" />
+		<PackageReference Include="Ocelot.Cache.CacheManager" Version="23.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NoteMicroservice.ServiceDefaults\NoteMicroservice.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Routes\ocelot.global.json" />
+    <_ContentIncludedByDefault Remove="Routes\ocelot.note.api.json" />
+    <_ContentIncludedByDefault Remove="Routes\ocelot.SwaggerEndPoints.json" />
+  </ItemGroup>
+
+</Project>

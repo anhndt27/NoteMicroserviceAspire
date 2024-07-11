@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="MyStaticFiles\**" />
+    <Content Remove="MyStaticFiles\**" />
+    <EmbeddedResource Remove="MyStaticFiles\**" />
+    <None Remove="MyStaticFiles\**" />
+
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="IronPdf" Version="2023.8.6" />
+    <PackageReference Include="Serilog" Version="2.12.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Folder Include="teacherphoto\" />
+    <Folder Include="wwwroot\pdf\cbt_pdf\" />
+    <Folder Include="wwwroot\pdf\material_pdf\" />
+    <Folder Include="wwwroot\pdf\pdfReceipt\" />
+    <Folder Include="wwwroot\pdf\pdfReceiptData\" />
+    <Folder Include="wwwroot\pdf\s-math\" />
+  </ItemGroup>
+
+</Project>
