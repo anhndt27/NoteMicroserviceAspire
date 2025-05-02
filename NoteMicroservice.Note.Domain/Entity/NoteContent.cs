@@ -1,6 +1,7 @@
 namespace NoteMicroservice.Note.Domain.Entity;
 
-public class NoteContent {
+public class NoteContent : BaseModel
+{
     public int Id { get; set; }
     public string Title { get; set; } = default!;
     public string NoteString { get; set; } = default!;

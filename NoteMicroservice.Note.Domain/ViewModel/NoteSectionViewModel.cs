@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NoteMicroservice.Note.Domain.ViewModel
 {
-	public class NotesSectionViewModel
+	public class NoteSectionViewModel
 	{
 		public string Title { get; set; }
 		public List<NoteSimpleResponseViewModel> Data { get; set; }
@@ -14,7 +14,7 @@ namespace NoteMicroservice.Note.Domain.ViewModel
 
 	public class NotesViewModel
 	{
-		public NotesSectionViewModel SectionPrivate { get; set; }
-		public NotesSectionViewModel SectionGroup { get; set; }
+		public NoteSectionViewModel SectionPrivate { get; set; }
+		public NoteSectionViewModel SectionGroup { get; set; }
 	}
 }

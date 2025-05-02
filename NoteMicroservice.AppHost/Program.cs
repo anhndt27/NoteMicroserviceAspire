@@ -7,8 +7,6 @@ var gateWay = builder.AddProject<Projects.NoteMicroservice_MinimalApi>("gateway"
 
 var note = builder.AddProject<Projects.NoteMicroservice_Note_API>("note-api");
 
-var staticFile = builder.AddProject<Projects.WebAppStaticFile>("staticfile-api");
-
 var identity = builder.AddProject<Projects.NoteMicroservice_Identity>("identity-api");
 
 builder.AddNpmApp("react", "../NoteMicroservice.React")
