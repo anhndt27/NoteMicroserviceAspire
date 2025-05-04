@@ -1,6 +1,9 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace NoteMicroservice.Note.Domain.Entity;
 
 public class BaseModel
 {
-    public string Id { get; set; }
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public virtual string Id { get; set; }
 }
