@@ -3,11 +3,6 @@ using NoteMicroservice.Note.Domain.Abstract.Repository;
 using NoteMicroservice.Note.Domain.Entity;
 using NoteMicroservice.Note.Domain.ViewModel;
 using NoteMicroservice.Note.Infrastructure.Context;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NoteMicroservice.Note.Infrastructure.Repository
 {
@@ -20,7 +15,7 @@ namespace NoteMicroservice.Note.Infrastructure.Repository
 			_context = context;
 		}
 
-		public async Task<List<NoteSimpleResponseViewModel>> GetListNotes(string userId, int? groupId)
+		public async Task<List<NoteSimpleResponseViewModel>> GetListNotes(string userId, string groupId)
 		{
 			var notes = new List<NoteSimpleResponseViewModel>();
 
@@ -57,7 +52,7 @@ namespace NoteMicroservice.Note.Infrastructure.Repository
 			return notes;
 		}
 
-		public async Task<NoteListFilter> GetListNotesFilter(string userId, int? groupId, string? filter, string? orderby)
+		public async Task<NoteListFilter> GetListNotesFilter(string userId, string groupId, string filter, string orderby)
 		{
 			var lts = new NoteListFilter();
 

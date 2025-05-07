@@ -9,7 +9,7 @@ namespace NoteMicroservice.Note.Domain.ViewModel
 {
 	public class NoteSimpleResponseViewModel
 	{
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string Title { get; set; } = default!;
 		public DateTimeOffset DateTime { get; set; }
         public string Category { get; set; }
@@ -20,7 +20,6 @@ namespace NoteMicroservice.Note.Domain.ViewModel
 	{
 		public string NoteString { get; set; } = default!;
 		public string UserId { get; set; } = default!;
-		public StatusAccess Status { get; set; }
 	}
 
 	public class NoteListFilter
@@ -31,7 +30,7 @@ namespace NoteMicroservice.Note.Domain.ViewModel
 
 	public class NoteDataItem
 	{
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string Title { get; set; }
 		public DateTimeOffset DateTime { get; set; }
 		public string Category { get; set; }

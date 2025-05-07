@@ -10,11 +10,11 @@ namespace NoteMicroservice.Note.Domain.Abstract.Service
 	public interface INoteService
 	{
 		Task<bool> CreateNote(NoteRequestViewModel request);
-		Task<bool> UpdateNote(int id, NoteReactViewModel request);
-		Task<bool> DeleteNote(int id);
-		Task<NoteResponseViewModel> GetNote(int id);
-		Task<List<NoteSimpleResponseViewModel>> GetListNotes(string userId, int? groupId);
-		Task<NoteListFilter> SearchListNotes(string? filter, string? orderby, string userId, int? group);
-		Task<bool> UpdateCategory(int id, UpdateCategoryRequest request);
+		Task<bool> UpdateNote(string id, NoteReactViewModel request);
+		Task<bool> DeleteNote(string id);
+		Task<NoteResponseViewModel> GetNote(string id);
+		Task<List<NoteSimpleResponseViewModel>> GetListNotes(string userId, string groupId);
+		Task<NoteListFilter> SearchListNotes(string filter, string orderby, string userId, string groupId);
+		Task<bool> UpdateCategory(string id, UpdateCategoryRequest request);
 	}
 }

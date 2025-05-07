@@ -30,13 +30,12 @@ namespace NoteMicroservice.Note.Domain.Implement.Service
 				UserId = request.UserId,
 				Title = request.Title,
 				DateTime = DateTime.Now,
-				StatusAccess = request.StatusAccess,
 			});
 
 			return true;
 		}
 
-		public async Task<bool> DeleteNote(int id)
+		public async Task<bool> DeleteNote(string id)
 		{
 			var res = await _repository.GetByIdAsync(id);
 
@@ -45,13 +44,13 @@ namespace NoteMicroservice.Note.Domain.Implement.Service
 			return true;
 		}
 
-		public async Task<List<NoteSimpleResponseViewModel>> GetListNotes(string userId, int? groupId)
+		public async Task<List<NoteSimpleResponseViewModel>> GetListNotes(string userId, string groupId)
 		{
 			var res = await _noteRepository.GetListNotes(userId, groupId);
 			return res;
 		}
 
-		public async Task<NoteResponseViewModel> GetNote(int id)
+		public async Task<NoteResponseViewModel> GetNote(string id)
 		{
 			var res = await _repository.GetByIdAsync(id);
 
@@ -61,18 +60,17 @@ namespace NoteMicroservice.Note.Domain.Implement.Service
 				NoteString = res.NoteString,
 				Title = res.Title,
 				UserId = res.UserId,
-				Status = res.StatusAccess,
 				DateTime = res.DateTime
 			}; 
 		}
 
-		public async Task<NoteListFilter> SearchListNotes(string? filter, string? orderby, string userId, int? group)
+		public async Task<NoteListFilter> SearchListNotes(string filter, string orderby, string userId, string groupId)
 		{
-			var res = await _noteRepository.GetListNotesFilter(userId, group, filter, orderby);
+			var res = await _noteRepository.GetListNotesFilter(userId, groupId, filter, orderby);
 			return res;
 		}
 
-		public async Task<bool> UpdateCategory(int id, UpdateCategoryRequest request)
+		public async Task<bool> UpdateCategory(string id, UpdateCategoryRequest request)
 		{
 			var res = await _repository.GetByIdAsync(id);
 
@@ -88,14 +86,13 @@ namespace NoteMicroservice.Note.Domain.Implement.Service
 			return true;
 		}
 
-		public async Task<bool> UpdateNote(int id, NoteReactViewModel request)
+		public async Task<bool> UpdateNote(string id, NoteReactViewModel request)
 		{
 
 			var res = await _repository.GetByIdAsync(id);
 
 			res.Title = request.Title;
 			res.NoteString = request.NoteString;
-			res.StatusAccess = request.StatusAccess;
 			res.DateTime = DateTime.Now;
 			await _repository.UpdateAsync(res);
 

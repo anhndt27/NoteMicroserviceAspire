@@ -22,7 +22,7 @@ namespace NoteMicroservice.Note.API.Controller
 		}
 
 		[HttpGet("Search")]
-		public async Task<IActionResult> GetListSearch(string userId, int? groupId, string? filter, string? orderby)
+		public async Task<IActionResult> GetListSearch(string userId, string groupId, string filter, string orderby)
 		{
 			try
 			{
@@ -36,7 +36,7 @@ namespace NoteMicroservice.Note.API.Controller
 		}
 
 		[HttpGet("GetList")]
-        public async Task<IActionResult> GetListNotes(string userId, int? groupId)
+        public async Task<IActionResult> GetListNotes(string userId, string groupId)
         {
             try
             {
@@ -64,7 +64,7 @@ namespace NoteMicroservice.Note.API.Controller
         }
 
         [HttpGet("Get")]
-        public async Task<IActionResult> GetNote(int id)
+        public async Task<IActionResult> GetNote(string id)
         {
             try
             {
@@ -79,7 +79,7 @@ namespace NoteMicroservice.Note.API.Controller
         }
 
         [HttpPut("Update")]
-        public async Task<IActionResult> Update(int id, NoteReactViewModel request)
+        public async Task<IActionResult> Update(string id, NoteReactViewModel request)
         {
             try
             {
@@ -93,7 +93,7 @@ namespace NoteMicroservice.Note.API.Controller
         }
 
         [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(string id)
         {
             try
             {
@@ -107,7 +107,7 @@ namespace NoteMicroservice.Note.API.Controller
         }
 
         [HttpPut("UpdateCategory")]
-        public async Task<IActionResult> UpdateCategory(int id, [FromBody] UpdateCategoryRequest request)
+        public async Task<IActionResult> UpdateCategory(string id, [FromBody] UpdateCategoryRequest request)
         {
             try {
                 var res = await _noteService.UpdateCategory(id, request);

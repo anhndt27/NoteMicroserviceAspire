@@ -12,20 +12,18 @@ namespace NoteMicroservice.Note.Domain.ViewModel
 		public string Title { get; set; } = default!;
 		public string NoteString { get; set; } = default!;
 		public string UserId { get; set; } = default!;
-		public int? GroupId { get; set; }
-		public StatusAccess StatusAccess { get; set; }
+		public string GroupId { get; set; }
 	}
 
 	public class NoteReactViewModel
 	{
 		public string Title { get; set; } = default!;
 		public string NoteString { get; set; } = default!;
-		public StatusAccess StatusAccess { get; set; }
 	}
 
 	public class UpdateCategoryRequest
 	{
 		public string Category { get; set; }
-		public int GroupId { get; set; }
+		public string GroupId { get; set; }
 	}
 }

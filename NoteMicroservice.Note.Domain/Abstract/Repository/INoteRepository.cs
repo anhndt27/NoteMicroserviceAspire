@@ -9,7 +9,7 @@ namespace NoteMicroservice.Note.Domain.Abstract.Repository
 {
     public interface INoteRepository
     {
-        Task<List<NoteSimpleResponseViewModel>> GetListNotes(string userId, int? groupId);
-		Task<NoteListFilter> GetListNotesFilter(string userId, int? groupId, string? filter, string? orderby);
+        Task<List<NoteSimpleResponseViewModel>> GetListNotes(string userId, string groupId);
+		Task<NoteListFilter> GetListNotesFilter(string userId, string groupId, string filter, string orderby);
 	}
 }

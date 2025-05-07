@@ -11,7 +11,7 @@ namespace NoteMicroservice.Note.Infrastructure.Repository
 {
 	public class Repository<T> : IRepository<T> where T : class
 	{
-		protected readonly NoteDbContext _context;
+		private readonly NoteDbContext _context;
 		private readonly DbSet<T> _dbSet;
 
 		public Repository(NoteDbContext context)
@@ -20,7 +20,7 @@ namespace NoteMicroservice.Note.Infrastructure.Repository
 			_dbSet = _context.Set<T>();
 		}
 
-		public async Task<T> GetByIdAsync(int id)
+		public async Task<T> GetByIdAsync(string id)
 		{
 			return await _dbSet.FindAsync(id);
 		}
