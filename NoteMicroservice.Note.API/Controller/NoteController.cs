@@ -21,6 +21,7 @@ namespace NoteMicroservice.Note.API.Controller
 			_noteService = noteService;
 		}
 
+        // api
 		[HttpGet("Search")]
 		public async Task<IActionResult> GetListSearch(string userId, string groupId, string filter, string orderby)
 		{
