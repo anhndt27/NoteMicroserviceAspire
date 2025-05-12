@@ -2,31 +2,29 @@
 using NoteMicroservice.Identity.Domain.Abstract.Repository;
 using NoteMicroservice.Identity.Domain.Abstract.Service;
 using NoteMicroservice.Identity.Domain.Entities;
-using NoteMicroservice.Identity.Domain.ViewModel;
+using NoteMicroservice.Identity.Domain.Dto;
 
 namespace NoteMicroservice.Identity.Domain.Implement.Service
 {
     public class UserService : IUserService
     {
         private readonly IRepository<User> _repository;
-        private readonly UserManager<User> _userManager;
         private readonly IUserRepository _userRepository;
-        public UserService(IRepository<User> repository, UserManager<User> userManager, IUserRepository userRepository)
+        public UserService(IRepository<User> repository, IUserRepository userRepository)
         {
             _repository = repository;
-            _userManager = userManager;
             _userRepository = userRepository;
         }
 
-        public async Task<UserResponseViewModel> GetUserByIdAsync(string id)
+        public async Task<UserResponseDto> GetUserByIdAsync(string id)
         {
             var user = await _userRepository.GetUserById(id);
 
-			return new UserResponseViewModel()
+			return new UserResponseDto()
             {
                 UserName = user.UserName,
                 Email = user.Email,
-                GroupName = user.GroupName
+                Groups = user.Groups
             };
         }
 

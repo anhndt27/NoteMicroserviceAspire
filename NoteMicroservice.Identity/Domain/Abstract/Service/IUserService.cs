@@ -1,11 +1,11 @@
 ﻿using NoteMicroservice.Identity.Domain.Entities;
-using NoteMicroservice.Identity.Domain.ViewModel;
+using NoteMicroservice.Identity.Domain.Dto;
 
 namespace NoteMicroservice.Identity.Domain.Abstract.Service
 {
     public interface IUserService
     {
-        Task<UserResponseViewModel> GetUserByIdAsync(string id);
+        Task<UserResponseDto> GetUserByIdAsync(string id);
         Task<IEnumerable<User>> GetAllUsersAsync();
         Task CreateUserAsync(User user);
         Task UpdateUserAsync(User user);

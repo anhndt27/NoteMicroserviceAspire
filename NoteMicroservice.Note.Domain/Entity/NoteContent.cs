@@ -2,10 +2,12 @@ namespace NoteMicroservice.Note.Domain.Entity;
 
 public class NoteContent : BaseModel, ISoftDeletedModel, ITimeTrackableModel, IUserTrackableModels
 {
-    public string Title { get; set; } = default!;
-    public string NoteString { get; set; } = default!;
-    public string UserId { get; set; } = default!;
+    public string Title { get; set; }
+    public string NoteString { get; set; }
+    public string UserId { get; set; }
     public string GroupId { get; set; }
+
+    
     public DateTimeOffset DateTime { get; set; }
     public bool IsDeleted { get; set; }
     public DateTimeOffset? DeletedTimeUtc { get; set; }

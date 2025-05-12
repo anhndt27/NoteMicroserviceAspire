@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NoteMicroservice.Note.Domain.Abstract.Repository;
 using NoteMicroservice.Note.Domain.Entity;
-using NoteMicroservice.Note.Domain.ViewModel;
+using NoteMicroservice.Note.Domain.Dto;
 using NoteMicroservice.Note.Infrastructure.Context;
 
 namespace NoteMicroservice.Note.Infrastructure.Repository
@@ -15,9 +15,9 @@ namespace NoteMicroservice.Note.Infrastructure.Repository
 			_context = context;
 		}
 
-		public async Task<List<NoteSimpleResponseViewModel>> GetListNotes(string userId, string groupId)
+		public async Task<List<NoteSimpleResponseDto>> GetListNotes(string userId, string groupId)
 		{
-			var notes = new List<NoteSimpleResponseViewModel>();
+			var notes = new List<NoteSimpleResponseDto>();
 
 			if (groupId != null) 
 			{
@@ -25,7 +25,7 @@ namespace NoteMicroservice.Note.Infrastructure.Repository
 					.Where(n => n.UserId == userId)
 					.Where(n => n.GroupId == groupId)
 					.OrderByDescending(n => n.DateTime)
-					.Select(n => new NoteSimpleResponseViewModel
+					.Select(n => new NoteSimpleResponseDto
 					{
 						Id = n.Id,
 						Title = n.Title, 
@@ -39,7 +39,7 @@ namespace NoteMicroservice.Note.Infrastructure.Repository
 				notes = await _context.NoteContents
 				.Where(n => n.UserId == userId && n.GroupId == null)
 				.OrderByDescending(n => n.DateTime)
-				.Select(n => new NoteSimpleResponseViewModel
+				.Select(n => new NoteSimpleResponseDto
 				{
 					Id = n.Id,
 					Title = n.Title,

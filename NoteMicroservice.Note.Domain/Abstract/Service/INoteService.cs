@@ -1,4 +1,4 @@
-﻿using NoteMicroservice.Note.Domain.ViewModel;
+﻿using NoteMicroservice.Note.Domain.Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +9,11 @@ namespace NoteMicroservice.Note.Domain.Abstract.Service
 {
 	public interface INoteService
 	{
-		Task<bool> CreateNote(NoteRequestViewModel request);
-		Task<bool> UpdateNote(string id, NoteReactViewModel request);
+		Task<bool> CreateNote(NoteRequestDto request);
+		Task<bool> UpdateNote(string id, NoteReactDto request);
 		Task<bool> DeleteNote(string id);
-		Task<NoteResponseViewModel> GetNote(string id);
-		Task<List<NoteSimpleResponseViewModel>> GetListNotes(string userId, string groupId);
+		Task<NoteResponseDto> GetNote(string id);
+		Task<List<NoteSimpleResponseDto>> GetListNotes(string userId, string groupId);
 		Task<NoteListFilter> SearchListNotes(string filter, string orderby, string userId, string groupId);
 		Task<bool> UpdateCategory(string id, UpdateCategoryRequest request);
 	}

@@ -1,6 +1,6 @@
 ﻿using NoteMicroservice.Identity.Domain.Abstract.Repository;
 using NoteMicroservice.Identity.Domain.Abstract.Service;
-using NoteMicroservice.Identity.Domain.ViewModel;
+using NoteMicroservice.Identity.Domain.Dto;
 
 namespace NoteMicroservice.Identity.Domain.Implement.Service
 {
@@ -27,30 +27,6 @@ namespace NoteMicroservice.Identity.Domain.Implement.Service
 			}
 
 			return _codeDict[id];
-		}
-
-		public async Task<int> CreateGroup(GroupRequestViewModel request)
-		{
-			var res = await _groupRepository.CreateGroup(request);
-			return res;
-		}
-
-		public async Task<int> JoinGroup(JoinGroupViewModel request)
-		{
-			var groupId = await DecodeGroupCodeAsync(request.GroupCode);
-
-			var res = await _groupRepository.JoinGroup(new ReactGroupViewModel()
-			{
-				GroupId = groupId,
-				UserId = request.UserId,
-			});
-			return groupId;
-		}
-
-		public async Task<bool> OutGroup(ReactGroupViewModel request)
-		{
-			var res = await _groupRepository.OutGroup(request);
-			return res;
 		}
 
 		public async Task<string> EncodeGroupCodeAsync(int groupId)

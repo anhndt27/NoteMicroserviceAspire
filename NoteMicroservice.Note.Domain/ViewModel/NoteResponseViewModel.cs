@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using NoteMicroservice.Note.Domain.Entity;
 
-namespace NoteMicroservice.Note.Domain.ViewModel
+namespace NoteMicroservice.Note.Domain.Dto
 {
-	public class NoteSimpleResponseViewModel
+	public class NoteSimpleResponseDto
 	{
         public string Id { get; set; }
         public string Title { get; set; } = default!;
@@ -16,7 +16,7 @@ namespace NoteMicroservice.Note.Domain.ViewModel
 
     }
 
-	public class NoteResponseViewModel : NoteSimpleResponseViewModel
+	public class NoteResponseDto : NoteSimpleResponseDto
 	{
 		public string NoteString { get; set; } = default!;
 		public string UserId { get; set; } = default!;

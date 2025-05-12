@@ -4,17 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NoteMicroservice.Note.Domain.ViewModel
+namespace NoteMicroservice.Note.Domain.Dto
 {
-	public class NoteSectionViewModel
+	public class NoteSectionDto
 	{
 		public string Title { get; set; }
-		public List<NoteSimpleResponseViewModel> Data { get; set; }
+		public List<NoteSimpleResponseDto> Data { get; set; }
 	}
 
-	public class NotesViewModel
+	public class NotesDto
 	{
-		public NoteSectionViewModel SectionPrivate { get; set; }
-		public NoteSectionViewModel SectionGroup { get; set; }
+		public NoteSectionDto SectionPrivate { get; set; }
+		public NoteSectionDto SectionGroup { get; set; }
 	}
 }

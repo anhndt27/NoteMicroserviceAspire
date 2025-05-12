@@ -1,6 +1,6 @@
-﻿namespace NoteMicroservice.Identity.Domain.ViewModel
+﻿namespace NoteMicroservice.Identity.Domain.Dto
 {
-    public class RegisterRequestViewModel
+    public class RegisterRequestDto
     {
         public string Username { get; set; }
         public string Email { get; set; }

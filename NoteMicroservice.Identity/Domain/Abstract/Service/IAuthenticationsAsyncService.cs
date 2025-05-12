@@ -1,11 +1,11 @@
-﻿using NoteMicroservice.Identity.Domain.ViewModel;
+﻿using NoteMicroservice.Identity.Domain.Dto;
 
 namespace NoteMicroservice.Identity.Domain.Abstract.Service
 {
     public interface IAuthenticationsAsyncService
     {
-        Task<LoginResponseViewModel> Login(LoginRequestViewModel request);
-        Task<string> Register(RegisterRequestViewModel request);
+        Task<LoginResponseDto> Login(LoginRequestDto request);
+        Task<string> Register(RegisterRequestDto request);
         Task LogoutAsync();
     }
 }

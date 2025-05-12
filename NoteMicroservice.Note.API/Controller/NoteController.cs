@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using NoteMicroservice.Note.Domain.Abstract.Service;
-using NoteMicroservice.Note.Domain.ViewModel;
+using NoteMicroservice.Note.Domain.Dto;
 using OpenTelemetry.Trace;
 using System.Diagnostics.Metrics;
 using System;
@@ -51,7 +51,7 @@ namespace NoteMicroservice.Note.API.Controller
         }
 
         [HttpPost("Create")]
-        public async Task<IActionResult> Create(NoteRequestViewModel request)
+        public async Task<IActionResult> Create(NoteRequestDto request)
         {
             try
             {
@@ -80,7 +80,7 @@ namespace NoteMicroservice.Note.API.Controller
         }
 
         [HttpPut("Update")]
-        public async Task<IActionResult> Update(string id, NoteReactViewModel request)
+        public async Task<IActionResult> Update(string id, NoteReactDto request)
         {
             try
             {

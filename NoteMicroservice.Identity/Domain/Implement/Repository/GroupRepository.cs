@@ -1,7 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using NoteMicroservice.Identity.Domain.Abstract.Repository;
 using NoteMicroservice.Identity.Domain.Entities;
-using NoteMicroservice.Identity.Domain.ViewModel;
+using NoteMicroservice.Identity.Domain.Dto;
+using NoteMicroservice.Identity.Domain.Dto.BaseDtos;
+using NoteMicroservice.Identity.Domain.Resources;
 using NoteMicroservice.Identity.Infrastructure;
 
 namespace NoteMicroservice.Identity.Domain.Implement.Repository
@@ -9,67 +12,72 @@ namespace NoteMicroservice.Identity.Domain.Implement.Repository
 	public class GroupRepository : IGroupRepository
 	{
 		private readonly ApplicationDbContext _dbContext;
+		private readonly IStringLocalizer<CommonTitles> _commonTitles;
+		private readonly IStringLocalizer<CommonMessages> _commonMessages;
 
-		public GroupRepository(ApplicationDbContext dbContext)
+		public GroupRepository(ApplicationDbContext dbContext, IStringLocalizer<CommonTitles> commonTitles, IStringLocalizer<CommonMessages> commonMessages)
 		{
 			_dbContext = dbContext;
+			_commonTitles = commonTitles;
+			_commonMessages = commonMessages;
 		}
 
-		public async Task<int> CreateGroup(GroupRequestViewModel request)
+		public async Task<ResponseMessage> CreateGroup(string identityId, GroupRequestDto request)
 		{
 			var group = new Group()
 			{
 				Name = request.GroupName,
-				Users = new List<User>()
 			};
 
-			var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
-
-			if (user != null) 
-			{ 
-				group.Users.Add(user); 
-			}
-
 			_dbContext.Groups.Add(group);
-			await _dbContext.SaveChangesAsync();
-
-			return group.Id;
+			var changeCount = await _dbContext.SaveChangesAsync();
+			
+			if (changeCount > 0)
+			{
+				return ResponseMessage.AddedSuccess(_commonTitles, _commonMessages);
+			}
+			return ResponseMessage.NoRecordAdded(_commonTitles, _commonMessages);
 		}
 
-		public async Task<bool> JoinGroup(ReactGroupViewModel request)
+		public Task<PaginatedListDto<GroupResponseDto>> SearchGroup(string identityId, GroupSearchRequestDto request)
 		{
-			var group = await _dbContext.Groups.Include(g => g.Users).FirstOrDefaultAsync(x => x.Id == request.GroupId);
+			throw new NotImplementedException();
+		}
 
-			var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
-			if (group != null && user != null)
+		public async Task<ResponseMessage> JoinGroup(string identityId, ReactGroupDto request)
+		{
+			var group = await _dbContext.Groups.Include(g => g.UserGroups).FirstOrDefaultAsync(x => x.Id == request.GroupId);
+
+			if (group != null)
 			{
-				group.Users.Add(user);
+				group.UserGroups.AddRange(request.UserIds.Select(e => new UserGroups()
+				{
+					UserId = e
+				}));
 			}
 
-			_dbContext.Groups.Update(group);
-			await _dbContext.SaveChangesAsync();
-
-			return true;
+			var changeCount = await _dbContext.SaveChangesAsync();
+			
+			if (changeCount > 0)
+			{
+				return ResponseMessage.AddedSuccess(_commonTitles, _commonMessages);
+			}
+			return ResponseMessage.NoRecordAdded(_commonTitles, _commonMessages);
 		}
 
-		public async Task<bool> OutGroup(ReactGroupViewModel request)
+		public async Task<ResponseMessage> OutGroup(string identityId, ReactGroupDto request)
 		{
 			var group = await _dbContext.Groups
-			.Include(g => g.Users)
+			.Include(g => g.UserGroups)
 			.FirstOrDefaultAsync(x => x.Id == request.GroupId);
 
-			if (group == null)
-				return false;
-
-			var user = group.Users.FirstOrDefault(u => u.Id == request.UserId);
-			if (user != null)
+			var changeCount = await _dbContext.SaveChangesAsync();
+			
+			if (changeCount > 0)
 			{
-				group.Users.Remove(user);
-				await _dbContext.SaveChangesAsync();
-				return true;
+				return ResponseMessage.AddedSuccess(_commonTitles, _commonMessages);
 			}
-
-			return false;
+			return ResponseMessage.NoRecordAdded(_commonTitles, _commonMessages);
 		}
 
     }

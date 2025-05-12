@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using NoteMicroservice.Identity.Domain.Abstract.Repository;
 using NoteMicroservice.Identity.Domain.Abstract.Service;
-using NoteMicroservice.Identity.Domain.Implement.Service;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using NoteMicroservice.Identity.Domain.Dto;
+using NoteMicroservice.Identity.Domain.Dto.BaseDtos;
+using NoteMicroservice.Identity.Domain.Extensions;
+using NoteMicroservice.Identity.Domain.Resources;
 
 namespace NoteMicroservice.Identity.Controllers
 {
@@ -13,20 +16,36 @@ namespace NoteMicroservice.Identity.Controllers
 	public class UserController : ControllerBase
 	{
 		private readonly IUserService _userService;
-
-		public UserController(IUserService userService)
+		private readonly IUserRepository _userRepository;
+		private readonly ILogger<UserController> _logger; 
+		private readonly IStringLocalizer<CommonTitles> _commonTitles;
+		private readonly IStringLocalizer<CommonMessages> _commonMessages;
+		
+		public UserController(IUserService userService, IUserRepository userRepository, ILogger<UserController> logger, IStringLocalizer<CommonTitles> commonTitles, IStringLocalizer<CommonMessages> commonMessages)
 		{
 			_userService = userService;
+			_userRepository = userRepository;
+			_logger = logger;
+			_commonTitles = commonTitles;
+			_commonMessages = commonMessages;
 		}
-
-		// GET: api/<UserController>
-		[HttpGet]
-		public IEnumerable<string> Get()
+		
+		[HttpPost("search")]
+		public async Task<IActionResult> Search([FromBody] UserSearchRequestDto search)
 		{
-			return new string[] { "value1", "value2" };
+			try
+			{
+				var identityId = this.GetUserId();
+				var res = await _userRepository.Search(identityId, search);
+				return Ok(res);git 
+			}
+			catch(Exception ex)
+			{
+				_logger.LogError(ex, "Exception when out group Dto: {@ReactGroupDto}", search);
+				return this.InternalServerError(ResponseMessage.SomethingWrong(_commonTitles, _commonMessages));
+			}
 		}
 
-		// GET api/<UserController>/5
 		[HttpGet("{id}")]
 		public async Task<IActionResult> Get(string id)
 		{
@@ -34,19 +53,16 @@ namespace NoteMicroservice.Identity.Controllers
 			return Ok(res);
 		}
 
-		// POST api/<UserController>
 		[HttpPost]
 		public void Post([FromBody] string value)
 		{
 		}
 
-		// PUT api/<UserController>/5
 		[HttpPut("{id}")]
 		public void Put(int id, [FromBody] string value)
 		{
 		}
-
-		// DELETE api/<UserController>/5
+		
 		[HttpDelete("{id}")]
 		public void Delete(int id)
 		{

@@ -1,7 +1,7 @@
 ﻿using NoteMicroservice.Note.Domain.Abstract.Repository;
 using NoteMicroservice.Note.Domain.Abstract.Service;
 using NoteMicroservice.Note.Domain.Entity;
-using NoteMicroservice.Note.Domain.ViewModel;
+using NoteMicroservice.Note.Domain.Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +22,7 @@ namespace NoteMicroservice.Note.Domain.Implement.Service
 			_noteRepository = noteRepository;
 		}
 
-		public async Task<bool> CreateNote(NoteRequestViewModel request)
+		public async Task<bool> CreateNote(NoteRequestDto request)
 		{
 			await _repository.AddAsync(new NoteContent() { 
 				NoteString = request.NoteString,
@@ -44,17 +44,17 @@ namespace NoteMicroservice.Note.Domain.Implement.Service
 			return true;
 		}
 
-		public async Task<List<NoteSimpleResponseViewModel>> GetListNotes(string userId, string groupId)
+		public async Task<List<NoteSimpleResponseDto>> GetListNotes(string userId, string groupId)
 		{
 			var res = await _noteRepository.GetListNotes(userId, groupId);
 			return res;
 		}
 
-		public async Task<NoteResponseViewModel> GetNote(string id)
+		public async Task<NoteResponseDto> GetNote(string id)
 		{
 			var res = await _repository.GetByIdAsync(id);
 
-			return new NoteResponseViewModel()
+			return new NoteResponseDto()
 			{
 				Id = id,
 				NoteString = res.NoteString,
@@ -86,7 +86,7 @@ namespace NoteMicroservice.Note.Domain.Implement.Service
 			return true;
 		}
 
-		public async Task<bool> UpdateNote(string id, NoteReactViewModel request)
+		public async Task<bool> UpdateNote(string id, NoteReactDto request)
 		{
 
 			var res = await _repository.GetByIdAsync(id);

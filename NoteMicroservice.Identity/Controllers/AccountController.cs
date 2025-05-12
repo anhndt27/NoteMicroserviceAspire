@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using NoteMicroservice.Identity.Domain.Abstract.Service;
-using NoteMicroservice.Identity.Domain.ViewModel;
+using NoteMicroservice.Identity.Domain.Dto;
+using NoteMicroservice.Identity.Domain.Dto.BaseDtos;
+using NoteMicroservice.Identity.Domain.Extensions;
+using NoteMicroservice.Identity.Domain.Resources;
 
 namespace NoteMicroservice.Identity.Controllers
 {
@@ -11,28 +15,35 @@ namespace NoteMicroservice.Identity.Controllers
     {
 
         private readonly IAuthenticationsAsyncService _authenticationsAsyncService;
+        private readonly ILogger<AccountController> _logger;
+        private readonly IStringLocalizer<CommonTitles> _commonTitles;
+        private readonly IStringLocalizer<CommonMessages> _commonMessages;
 
-        public AccountController(IAuthenticationsAsyncService authenticationsAsyncService)
+        public AccountController(IAuthenticationsAsyncService authenticationsAsyncService, ILogger<AccountController> logger, IStringLocalizer<CommonTitles> commonTitle, IStringLocalizer<CommonMessages> commonMessages)
         {
             _authenticationsAsyncService = authenticationsAsyncService;
+            _logger = logger;
+            _commonTitles = commonTitle;
+            _commonMessages = commonMessages;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequestViewModel model)
+        public async Task<IActionResult> Register([FromBody] RegisterRequestDto model)
         {
             try
             {
                 var result = await _authenticationsAsyncService.Register(model);
                 return Ok(result);
             }
-            catch
+            catch(Exception ex)
             {
-                return BadRequest("User creation failed");
+                _logger.LogError(ex, "Exception when register");
+                return this.InternalServerError(ResponseMessage.SomethingWrong(_commonTitles, _commonMessages));
             }
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequestViewModel model)
+        public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
             try
             {
@@ -40,18 +51,11 @@ namespace NoteMicroservice.Identity.Controllers
                 if (result.Token == "Fail") return BadRequest("Login fail");
 				return Ok(result);
             }
-            catch (Exception)
+            catch(Exception ex)
             {
-                return BadRequest("Login fail");
+                _logger.LogError(ex, "Exception when login");
+                return this.InternalServerError(ResponseMessage.SomethingWrong(_commonTitles, _commonMessages));
             }
-
-        }
-
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
-        {
-            await _authenticationsAsyncService.LogoutAsync();
-            return Ok("User logged out successfully!");
         }
     }
 }

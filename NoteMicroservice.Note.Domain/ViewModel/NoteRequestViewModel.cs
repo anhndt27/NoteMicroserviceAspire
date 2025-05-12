@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NoteMicroservice.Note.Domain.ViewModel
+namespace NoteMicroservice.Note.Domain.Dto
 {
-	public class NoteRequestViewModel
+	public class NoteRequestDto
 	{
 		public string Title { get; set; } = default!;
 		public string NoteString { get; set; } = default!;
@@ -15,7 +15,7 @@ namespace NoteMicroservice.Note.Domain.ViewModel
 		public string GroupId { get; set; }
 	}
 
-	public class NoteReactViewModel
+	public class NoteReactDto
 	{
 		public string Title { get; set; } = default!;
 		public string NoteString { get; set; } = default!;

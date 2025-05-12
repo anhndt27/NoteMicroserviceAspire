@@ -1,11 +1,13 @@
-﻿using NoteMicroservice.Identity.Domain.ViewModel;
+﻿using NoteMicroservice.Identity.Domain.Dto;
+using NoteMicroservice.Identity.Domain.Dto.BaseDtos;
 
 namespace NoteMicroservice.Identity.Domain.Abstract.Repository
 {
 	public interface IGroupRepository
 	{
-		Task<bool> JoinGroup(ReactGroupViewModel request);
-		Task<bool> OutGroup(ReactGroupViewModel request);
-		Task<int> CreateGroup(GroupRequestViewModel request);
+		Task<ResponseMessage> JoinGroup(string identityId, ReactGroupDto request);
+		Task<ResponseMessage> OutGroup(string identityId, ReactGroupDto request);
+		Task<ResponseMessage> CreateGroup(string identityId, GroupRequestDto request);
+		Task<PaginatedListDto<GroupResponseDto>> SearchGroup (string identityId, GroupSearchRequestDto request);
 	}
 }
