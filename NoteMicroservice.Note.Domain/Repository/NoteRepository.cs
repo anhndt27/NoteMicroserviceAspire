@@ -22,8 +22,6 @@ namespace NoteMicroservice.Note.Infrastructure.Repository
 			if (groupId != null) 
 			{
 				notes = await _context.NoteContents
-					.Where(n => n.UserId == userId)
-					.Where(n => n.GroupId == groupId)
 					.OrderByDescending(n => n.DateTime)
 					.Select(n => new NoteSimpleResponseDto
 					{
@@ -37,7 +35,6 @@ namespace NoteMicroservice.Note.Infrastructure.Repository
 			else if (userId != null && groupId == null) 
 			{
 				notes = await _context.NoteContents
-				.Where(n => n.UserId == userId && n.GroupId == null)
 				.OrderByDescending(n => n.DateTime)
 				.Select(n => new NoteSimpleResponseDto
 				{

@@ -6,80 +6,83 @@ using Ocelot.Middleware;
 using Ocelot.Provider.Polly;
 using System.Text;
 
-var builder = WebApplication.CreateBuilder(args);
-
-var configuration = builder.Configuration;
-
-builder.Services.AddControllers();
-
-builder.Services.AddEndpointsApiExplorer();
-
-builder.Configuration
-    .SetBasePath(builder.Environment.ContentRootPath)
-    .AddJsonFile("ocelot.json")
-    .AddEnvironmentVariables();
-
-builder.Services.AddOcelot(builder.Configuration).AddPolly();;
-
-builder.Services.AddSwaggerForOcelot(builder.Configuration);
-
-builder.Services.AddSwaggerGen();
-
-
-builder.Services.AddAuthentication(opt =>
+public class Program
 {
-    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-    .AddJwtBearer(opt =>
+    public static void Main(string[] args)
     {
-        opt.RequireHttpsMetadata = false;
-        opt.SaveToken = true;
-        opt.TokenValidationParameters = new TokenValidationParameters
+        var builder = WebApplication.CreateBuilder(args);
+        
+        builder.Services.AddControllers();
+        
+        builder.Services.AddEndpointsApiExplorer();
+        
+        builder.Configuration
+            .SetBasePath(builder.Environment.ContentRootPath)
+            .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
+            .AddEnvironmentVariables();
+        
+        builder.Services.AddCors(options =>
         {
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateIssuerSigningKey = true,
-        };
-    });
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.WithOrigins("https://localhost:7167", "http://localhost:5084")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            });
+        });
+        
+        builder.Services.AddOcelot(builder.Configuration).AddPolly();
 
-//var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        builder.Services.AddSwaggerForOcelot(builder.Configuration);
+        
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey =
+                        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+                    ValidateIssuer = true,
+                    ValidateAudience = false,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
 
-builder.AddServiceDefaults();
+        builder.AddServiceDefaults();
 
-builder.Services.AddCors();
+        var app = builder.Build();
 
-var app = builder.Build();
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
 
-app.MapDefaultEndpoints();
+            app.UseSwaggerForOcelotUI(opt =>
+            {
+                opt.PathToSwaggerGenerator = "/swagger/docs";
+            });
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    //app.UseSwaggerUI();
-    app.UseDeveloperExceptionPage();
-    app.UseSwaggerForOcelotUI(opt => {
-        opt.PathToSwaggerGenerator = "/swagger/docs";
-    });
+            app.UsePathBase("/gateway");
+
+            app.UseStaticFiles();
+
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+
+            app.UseCors();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseOcelot().Wait();
+
+            app.MapControllers();
+
+            app.Run();
+        }
+    }
 }
-
-app.UsePathBase("/gateway");
-
-app.UseStaticFiles();
-
-app.UseHttpsRedirection();
-
-app.UseOcelot().Wait();
-
-app.UseAuthorization();
-
-app.UseCors(static builder => 
-    builder.AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowAnyOrigin());
-
-app.MapControllers();
-
-app.Run();
