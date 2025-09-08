@@ -32,6 +32,16 @@ namespace NoteMicroservice.Identity.Domain.Implement.Repository
 			};
 		}
 
+		public Task<List<string>> GetUserGroupIdsAsync(string userId)
+		{
+			var groupIds = _context.UserGroups
+				.Where(ug => ug.UserId == userId)
+				.Select(ug => ug.GroupId)
+				.ToListAsync();
+			
+			return groupIds;
+		}
+
 		public Task<PaginatedListDto<UserResponseDto>> Search(string identityId, UserSearchRequestDto request)
 		{
 			throw new NotImplementedException();

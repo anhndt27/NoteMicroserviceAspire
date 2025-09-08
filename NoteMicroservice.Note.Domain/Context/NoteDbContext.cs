@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NoteMicroservice.Note.Domain.Entity;
 
-namespace NoteMicroservice.Note.Infrastructure.Context;
+namespace NoteMicroservice.Note.Domain.Context;
 
 public partial class NoteDbContext : DbContext
 {

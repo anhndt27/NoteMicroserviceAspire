@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NoteMicroservice.Identity.Domain.Entities;
 
 namespace NoteMicroservice.Identity.Infrastructure
@@ -13,6 +12,11 @@ namespace NoteMicroservice.Identity.Infrastructure
         public string OperatingUserId { get; private set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Group> Groups { get; set; }
+        public DbSet<UserGroups> UserGroups { get; set; }
+        
+        public DbSet<Role> Role { get; set; }
+        public DbSet<UserRole> UserRole { get; set; }
+        public DbSet<RolePermission> RolePermission { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -33,6 +37,24 @@ namespace NoteMicroservice.Identity.Infrastructure
                 .HasOne(ug => ug.User)
                 .WithMany(u => u.UserGroups)
                 .HasForeignKey(ug => ug.UserId);
+            
+            builder.Entity<UserRole>().HasOne(e => e.User)
+                .WithMany(e => e.UserRoles).HasForeignKey(e => e.UserId).IsRequired();
+            builder.Entity<UserRole>().HasOne(e => e.Role)
+                .WithMany(e => e.UserRoles).HasForeignKey(entity => entity.RoleId).IsRequired();
+            builder.Entity<UserRole>()
+                .HasOne(e => e.CreatedByUser).WithMany().HasForeignKey(e => e.CreatedByUserId);
+            builder.Entity<UserRole>()
+                .HasOne(e => e.UpdatedByUser).WithMany().HasForeignKey(e => e.UpdatedByUserId);
+            builder.Entity<UserRole>()
+                .HasOne(e => e.DeletedByUser).WithMany().HasForeignKey(e => e.DeletedByUserId);
+            
+            builder.Entity<UserGroups>()
+                .HasOne(e => e.CreatedByUser).WithMany().HasForeignKey(e => e.CreatedByUserId);
+            builder.Entity<UserGroups>()
+                .HasOne(e => e.UpdatedByUser).WithMany().HasForeignKey(e => e.UpdatedByUserId);
+            builder.Entity<UserGroups>()
+                .HasOne(e => e.DeletedByUser).WithMany().HasForeignKey(e => e.DeletedByUserId);
         }
         
         public void SetOperatingUser(string userId)

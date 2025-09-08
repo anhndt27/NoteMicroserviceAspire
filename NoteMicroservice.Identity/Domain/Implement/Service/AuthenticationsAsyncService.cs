@@ -9,6 +9,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using NoteMicroservice.Identity.Domain.Abstract.Repository;
+using NoteMicroservice.Identity.Domain.Auths;
 using NoteMicroservice.Identity.Infrastructure;
 
 namespace NoteMicroservice.Identity.Domain.Implement.Service
@@ -16,51 +18,66 @@ namespace NoteMicroservice.Identity.Domain.Implement.Service
     public class AuthenticationsAsyncService : IAuthenticationsAsyncService
     {
         private readonly IConfiguration _configuration;
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
         private readonly ApplicationDbContext _dbContext;
-        public AuthenticationsAsyncService(IConfiguration configuration,UserManager<User> userManager, SignInManager<User> signInManager, ApplicationDbContext dbContext)
+        private readonly JwtTokenGenerator _jwtTokenGenerator;
+        private readonly IUserRepository _userRepository;
+        
+        public AuthenticationsAsyncService(IConfiguration configuration, ApplicationDbContext dbContext, JwtTokenGenerator jwtTokenGenerator, IUserRepository userRepository)
         {
-            _signInManager = signInManager;
             _dbContext = dbContext;
+            _jwtTokenGenerator = jwtTokenGenerator;
+            _userRepository = userRepository;
             _configuration = configuration;
-            _userManager = userManager;
         }
 
         public async Task<LoginResponseDto> Login(LoginRequestDto request)
         {
-            var user = await _dbContext.Users
-                .Include(u => u.UserGroups).ThenInclude(ug => ug.Group)
-                .FirstOrDefaultAsync(u => u.UserName == request.UserName);
-
-            if (user != null && VerifyPassword(request.Password, user.Password))
+            try
             {
-                var token = GenerateJwtToken(user.UserName);
+                var user = await _dbContext.Users
+                    .Include(u => u.UserGroups).ThenInclude(ug => ug.Group)
+                    .FirstOrDefaultAsync(u => u.UserName == request.UserName);
+                var groupIds = await _userRepository.GetUserGroupIdsAsync(user.Id);
+                
+                if (VerifyPassword(request.Password, user.Password))
+                {
+                    var token = _jwtTokenGenerator.GenerateToken(user.Id, groupIds);
+                    return new LoginResponseDto()
+                    {
+                        UserId = user.Id,
+                        UserName = request.UserName,
+                        Token = token,
+                        GroupIds = user.UserGroups?.Select(ug => ug.Group?.Id).ToList(),
+                        GroupNames = user.UserGroups?.Select(ug => ug.Group?.Name).ToList()
+                    };
+                }
+
                 return new LoginResponseDto()
                 {
-                    UserId = user.Id,
                     UserName = request.UserName,
-                    Token = token,
-                    GroupIds = user.UserGroups?.Select(ug => ug.Group?.Id).ToList(),
-                    GroupNames = user.UserGroups?.Select(ug => ug.Group?.Name).ToList()
+                    Token = "Fail"
                 };
             }
-
-            return new LoginResponseDto()
+            catch (Exception e)
             {
-                UserName = request.UserName,
-                Token = "Fail"
-            };
+                Console.WriteLine(e);
+                throw;
+            }
         }
         
         public async Task<string> Register(RegisterRequestDto request)
         {
             if (await _dbContext.Users.AnyAsync(u => u.UserName == request.Username || u.Email == request.Email))
             {
-                return "Username hoặc Email đã tồn tại";
+                return "Username hoặc Email đã tồn tại"; // Thông báo lỗi
             }
 
-            var user = new User { UserName = request.Username, Email = request.Email };
+            var user = new User
+            {
+                UserName = request.Username,
+                Email = request.Email,
+            };
+
             user.Password = HashPassword(request.Password);
 
             _dbContext.Users.Add(user);
@@ -71,58 +88,42 @@ namespace NoteMicroservice.Identity.Domain.Implement.Service
         
         private string HashPassword(string password)
         {
-            const int saltSize = 16;
-            const int iterations = 10000;
-            var salt = RandomNumberGenerator.GetBytes(saltSize);
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA256);
-            var key = pbkdf2.GetBytes(32);
-            return Convert.ToBase64String(salt) + ":" + iterations + ":" + Convert.ToBase64String(key);
-        }
+            byte[] salt = new byte[16];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(salt);
+            }
+    
+            int iterations = 10000;
+            HashAlgorithmName hashAlgorithm = HashAlgorithmName.SHA256;
 
+            using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations, hashAlgorithm);
+            byte[] hash = pbkdf2.GetBytes(32);
+            return $"{Convert.ToBase64String(salt)}:{iterations}:{Convert.ToBase64String(hash)}";
+        }
+        
         private bool VerifyPassword(string password, string hashedPassword)
         {
             try
             {
                 var parts = hashedPassword.Split(':');
+                if (parts.Length != 3) return false;
+
                 var salt = Convert.FromBase64String(parts[0]);
                 var iterations = int.Parse(parts[1]);
-                var key = Convert.FromBase64String(parts[2]);
-                using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA256);
-                var keyToCheck = pbkdf2.GetBytes(32);
-                return CryptographicOperations.FixedTimeEquals(keyToCheck, key);
+                var storedHash = Convert.FromBase64String(parts[2]);
+
+                HashAlgorithmName hashAlgorithm = HashAlgorithmName.SHA256;
+
+                using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations, hashAlgorithm);
+                var hashAttempt = pbkdf2.GetBytes(32);
+
+                return CryptographicOperations.FixedTimeEquals(hashAttempt, storedHash);
             }
-            catch { return false; }
-        }
-
-        public async Task LogoutAsync()
-        {
-            await _signInManager.SignOutAsync();
-        }
-
-        private string GenerateJwtToken(string userName, List<string> groupIds = null)
-        {
-            var claims = new List<Claim>
+            catch
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            if (groupIds != null && groupIds.Any())
-            {
-                claims.AddRange(groupIds.Select(g => new Claim("group", g)));
+                return false;
             }
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Issuer"],
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

@@ -12,6 +12,8 @@ namespace NoteMicroservice.Identity.Infrastructure
             builder.Entity<Role>().HasQueryFilter(e => !e.IsDeleted);
             builder.Entity<UserRole>().HasQueryFilter(e => !e.IsDeleted);
             builder.Entity<RolePermission>().HasQueryFilter(e => !e.IsDeleted);
+            builder.Entity<UserGroups>().HasQueryFilter(e => !e.IsDeleted);
+            builder.Entity<Group>().HasQueryFilter(e => !e.IsDeleted);
         }
     }
 }

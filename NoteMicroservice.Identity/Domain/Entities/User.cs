@@ -6,16 +6,12 @@ namespace NoteMicroservice.Identity.Domain.Entities
 {
     public class User : BaseModel, ISoftDeletedModel, ITimeTrackableModel, IUserTrackableModels
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public override string Id { get; set; }
-        
         public string UserName { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
         
         public List<UserRole> UserRoles { get; set; }
-        public ICollection<UserGroups> UserGroups { get; set; }
+        public List<UserGroups> UserGroups { get; set; }
         
         public bool IsDeleted { get; set; }
         public DateTimeOffset? DeletedTimeUtc { get; set; }

@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-     <ProjectReference Include="..\NoteMicroservice.Note.Domain\NoteMicroservice.Note.Domain.csproj" />
+    <ProjectReference Include="..\NoteMicroservice.Note.Domain\NoteMicroservice.Note.Domain.csproj" />
   </ItemGroup>
 
 </Project>

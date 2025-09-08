@@ -6,6 +6,9 @@ using NoteMicroservice.Note.Domain.Dto;
 using OpenTelemetry.Trace;
 using System.Diagnostics.Metrics;
 using System;
+using NoteMicroservice.Note.API.Extensions;
+using NoteMicroservice.Note.Domain.Dtos;
+using NoteMicroservice.Note.Domain.ViewModel;
 
 namespace NoteMicroservice.Note.API.Controller
 {
@@ -21,13 +24,15 @@ namespace NoteMicroservice.Note.API.Controller
 			_noteService = noteService;
 		}
 
-        // api
-		[HttpGet("Search")]
-		public async Task<IActionResult> GetListSearch(string userId, string groupId, string filter, string orderby)
+		[HttpPost("Search")]
+		public async Task<IActionResult> GetListSearch(NoteSearchDto searchDto)
 		{
 			try
-			{
-				var res = await _noteService.SearchListNotes(filter, orderby, userId, groupId);
+            {
+                var userId = this.GetUserId();
+                var groupIds = this.GetGroupIds();
+
+                var res = await _noteService.Search(userId, groupIds, searchDto);
 				return Ok(res);
 			}
 			catch
@@ -36,26 +41,14 @@ namespace NoteMicroservice.Note.API.Controller
 			}
 		}
 
-		[HttpGet("GetList")]
-        public async Task<IActionResult> GetListNotes(string userId, string groupId)
-        {
-            try
-            {
-                var res = await _noteService.GetListNotes(userId, groupId);
-                return Ok(res);
-            }
-            catch
-            {
-                return BadRequest("Fails");
-            }
-        }
-
         [HttpPost("Create")]
         public async Task<IActionResult> Create(NoteRequestDto request)
         {
             try
             {
-                var res = await _noteService.CreateNote(request);
+                var userId = this.GetUserId();
+                
+                var res = await _noteService.CreateNote(userId, request);
                 return Ok(res);
             }
             catch (Exception e)
@@ -69,6 +62,9 @@ namespace NoteMicroservice.Note.API.Controller
         {
             try
             {
+                var userId = this.GetUserId();
+                var groupIds = this.GetGroupIds();
+
                 var res = await _noteService.GetNote(id);
               
                 return Ok(res);
@@ -84,6 +80,9 @@ namespace NoteMicroservice.Note.API.Controller
         {
             try
             {
+                var userId = this.GetUserId();
+                var groupIds = this.GetGroupIds();
+                
                 var res = await _noteService.UpdateNote(id, request);
                 return Ok(res);
             }
@@ -98,6 +97,9 @@ namespace NoteMicroservice.Note.API.Controller
         {
             try
             {
+                var userId = this.GetUserId();
+                var groupIds = this.GetGroupIds();
+                
                 var res = await _noteService.DeleteNote(id);
                 return Ok(res);
             }
@@ -106,34 +108,6 @@ namespace NoteMicroservice.Note.API.Controller
                 return BadRequest("Fails");
             }
         }
-
-        [HttpPut("UpdateCategory")]
-        public async Task<IActionResult> UpdateCategory(string id, [FromBody] UpdateCategoryRequest request)
-        {
-            try {
-                var res = await _noteService.UpdateCategory(id, request);
-                return Ok(res);
-            }
-            catch {
-                return BadRequest("Fails");
-            }
-        }
-
-		[HttpGet]
-		[Route("Download")]
-		public async Task<IActionResult> DownloadPdf()
-		{
-            var filePath = "C: \\Users\\Hi\\OneDrive - actvn.edu.vn\\Documents\\Workspace\\NoteMicroservice - master\\NoteMicroservice - master\\NoteMicroservice.Note.API\\file\\sample.pdf";
-			
-            if (!System.IO.File.Exists(filePath))
-			{
-				return NotFound();
-			}
-
-			var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-
-			return File(fileBytes, "application/pdf", "example.pdf");
-		}
 
 	}
 }

@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NoteMicroservice.Note.Domain.Abstract.Repository;
-using NoteMicroservice.Note.Infrastructure.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NoteDbContext = NoteMicroservice.Note.Domain.Context.NoteDbContext;
 
 namespace NoteMicroservice.Note.Infrastructure.Repository
 {

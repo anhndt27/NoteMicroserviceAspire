@@ -4,9 +4,8 @@ public class NoteContent : BaseModel, ISoftDeletedModel, ITimeTrackableModel, IU
 {
     public string Title { get; set; }
     public string NoteString { get; set; }
-    public string UserId { get; set; }
-    public string GroupId { get; set; }
 
+    public List<NoteContentPermission> NoteContentPermissions { get; set; }
     
     public DateTimeOffset DateTime { get; set; }
     public bool IsDeleted { get; set; }

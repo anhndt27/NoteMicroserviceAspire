@@ -109,5 +109,21 @@ namespace NoteMicroservice.Identity.Controllers
 				return this.InternalServerError(ResponseMessage.SomethingWrong(_commonTitles, _commonMessages));
 			}
 		}
+		
+		[HttpGet("Get-All")]
+		public async Task<IActionResult> GetAll()
+		{
+			try
+			{
+				var identityId = this.GetUserId();
+				var res = await _groupRepository.GetAllGroups(identityId);
+				return Ok(res);
+			}
+			catch(Exception ex)
+			{
+				_logger.LogError(ex, "Exception when get all group");
+				return this.InternalServerError(ResponseMessage.SomethingWrong(_commonTitles, _commonMessages));
+			}
+		}
 	}
 }

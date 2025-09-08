@@ -4,6 +4,7 @@ using NoteMicroservice.Identity.Domain.Abstract.Repository;
 using NoteMicroservice.Identity.Domain.Entities;
 using NoteMicroservice.Identity.Domain.Dto;
 using NoteMicroservice.Identity.Domain.Dto.BaseDtos;
+using NoteMicroservice.Identity.Domain.Extensions;
 using NoteMicroservice.Identity.Domain.Resources;
 using NoteMicroservice.Identity.Infrastructure;
 
@@ -27,7 +28,13 @@ namespace NoteMicroservice.Identity.Domain.Implement.Repository
 			var group = new Group()
 			{
 				Name = request.GroupName,
+				UserGroups = new List<UserGroups>()
 			};
+			
+			group.UserGroups.Add(new UserGroups()
+			{
+				UserId = identityId,
+			});
 
 			_dbContext.Groups.Add(group);
 			var changeCount = await _dbContext.SaveChangesAsync();
@@ -39,9 +46,28 @@ namespace NoteMicroservice.Identity.Domain.Implement.Repository
 			return ResponseMessage.NoRecordAdded(_commonTitles, _commonMessages);
 		}
 
-		public Task<PaginatedListDto<GroupResponseDto>> SearchGroup(string identityId, GroupSearchRequestDto request)
+		public async Task<PaginatedListDto<GroupResponseDto>> SearchGroup(string identityId, GroupSearchRequestDto searchDto)
 		{
-			throw new NotImplementedException();
+			searchDto.TryCreateSingleQuery(_dbContext, out IQueryable<Group> query);
+
+			var paginationDto = await query.CreatePaginationAsync(searchDto.PageIndex, searchDto.PageSize,
+				e => e.ToGroupResponseDto());
+
+			return paginationDto;
+		}
+
+		public async Task<List<GroupResponseDto>> GetAllGroups(string identityId)
+		{
+			var groups = await _dbContext.Groups
+				.Where(e => e.UserGroups.Any(u => u.UserId == identityId))
+				.Include(g => g.UserGroups)
+				.Select(g => new GroupResponseDto()
+				{
+					Id = g.Id,
+					Name = g.Name,
+				}).ToListAsync();
+			
+			return groups;
 		}
 
 		public async Task<ResponseMessage> JoinGroup(string identityId, ReactGroupDto request)

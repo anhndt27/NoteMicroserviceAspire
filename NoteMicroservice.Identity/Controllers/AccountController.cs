@@ -32,6 +32,7 @@ namespace NoteMicroservice.Identity.Controllers
         {
             try
             {
+                var userId = this.GetUserId();
                 var result = await _authenticationsAsyncService.Register(model);
                 return Ok(result);
             }

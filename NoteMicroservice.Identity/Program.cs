@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,16 @@ using NoteMicroservice.Identity;
 using NoteMicroservice.Identity.Domain.Entities;
 using NoteMicroservice.Identity.Infrastructure;
 using System.Text;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.OpenApi.Models;
+using NoteMicroservice.Identity.Domain.Abstract.Repository;
+using NoteMicroservice.Identity.Domain.Abstract.Service;
+using NoteMicroservice.Identity.Domain.Auths;
+using NoteMicroservice.Identity.Domain.Configurations;
+using NoteMicroservice.Identity.Domain.Constants;
+using NoteMicroservice.Identity.Domain.Dto;
+using NoteMicroservice.Identity.Domain.Implement.Repository;
+using NoteMicroservice.Identity.Domain.Implement.Service;
 
 public class Program
 {
@@ -16,14 +27,13 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+        // Add services to the container.
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-        builder.Services.AddIdentity<User, IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         builder.Services.AddAuthentication(options =>
             {
@@ -32,33 +42,84 @@ public class Program
             })
             .AddJwtBearer(options =>
             {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
                     ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Issuer"],
-                    IssuerSigningKey =
-                        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                    ValidAudience = builder.Configuration["Jwt:Issuer"]
                 };
             });
-
+        
+        // localization
+        builder.Services.AddLocalization();
+        builder.Services.Configure<RequestLocalizationOptions>(options =>
+        {
+            var supportedCultures = new List<CultureInfo>
+            {
+                new CultureInfo("vi"),
+                new CultureInfo("en")
+            };
+            options.DefaultRequestCulture = new RequestCulture(culture: "vi", uiCulture: "vi");
+            options.SupportedCultures = supportedCultures;
+            options.SupportedUICultures = supportedCultures;
+        });
+        
         builder.Services.DependencyInjectionCore();
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "NoteMicroservice.Identity API", Version = "v1" });
+
+            var securityScheme = new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Description = "Enter JWT Token in the format 'Bearer {your token}'",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Reference = new OpenApiReference
+                {
+                    Id = JwtBearerDefaults.AuthenticationScheme,
+                    Type = ReferenceType.SecurityScheme
+                }
+            };
+            c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+
+            var securityRequirement = new OpenApiSecurityRequirement
+            {
+                { securityScheme, new List<string>() }
+            };
+            c.AddSecurityRequirement(securityRequirement);
+        });
         builder.Services.AddControllers();
+        
+        // DI
+        builder.Services.AddScoped<JwtTokenGenerator>();
+        builder.Services.AddScoped<IAuthenticationsAsyncService, AuthenticationsAsyncService>();
+        builder.Services.AddScoped<IGroupService, GroupService>();
+        builder.Services.AddScoped<IGroupRepository, GroupRepository >();
+        builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IUserRepository, UserRepository >();
+        
         builder.AddServiceDefaults();
 
         var app = builder.Build();
 
-// Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "NoteMicroservice.Note API V1");
+            });
         }
 
         app.MapControllerRoute(

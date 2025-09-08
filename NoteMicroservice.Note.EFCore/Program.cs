@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using NoteMicroservice.Note.Infrastructure.Context;
+using NoteDbContext = NoteMicroservice.Note.Domain.Context.NoteDbContext;
 
 var builder = WebApplication.CreateBuilder(args);
 

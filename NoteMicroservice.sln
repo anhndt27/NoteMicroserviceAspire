@@ -14,8 +14,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoteMicroservice.Identity",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoteMicroservice.Note.EFCore", "NoteMicroservice.Note.EFCore\NoteMicroservice.Note.EFCore.csproj", "{A878CC80-E929-4F97-A794-87A5278D0FF4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoteMicroservice.Note.Infrastructure", "NoteMicroservice.Note.Infrastructure\NoteMicroservice.Note.Infrastructure.csproj", "{1CE156EF-C6A6-4769-9CBC-A05BE3EC1299}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoteMicroservice.Note.Domain", "NoteMicroservice.Note.Domain\NoteMicroservice.Note.Domain.csproj", "{9272065B-6C6E-4811-8821-5C8EB16FC227}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoteMicroservice.Notification", "NoteMicroservice.Notification\NoteMicroservice.Notification.csproj", "{F9089E20-7A06-426B-BBDE-831BE1750428}"
@@ -50,10 +48,6 @@ Global
 		{A878CC80-E929-4F97-A794-87A5278D0FF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A878CC80-E929-4F97-A794-87A5278D0FF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A878CC80-E929-4F97-A794-87A5278D0FF4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1CE156EF-C6A6-4769-9CBC-A05BE3EC1299}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1CE156EF-C6A6-4769-9CBC-A05BE3EC1299}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1CE156EF-C6A6-4769-9CBC-A05BE3EC1299}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1CE156EF-C6A6-4769-9CBC-A05BE3EC1299}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9272065B-6C6E-4811-8821-5C8EB16FC227}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9272065B-6C6E-4811-8821-5C8EB16FC227}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9272065B-6C6E-4811-8821-5C8EB16FC227}.Release|Any CPU.ActiveCfg = Release|Any CPU

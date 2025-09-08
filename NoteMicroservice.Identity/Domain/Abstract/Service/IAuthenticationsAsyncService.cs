@@ -6,6 +6,5 @@ namespace NoteMicroservice.Identity.Domain.Abstract.Service
     {
         Task<LoginResponseDto> Login(LoginRequestDto request);
         Task<string> Register(RegisterRequestDto request);
-        Task LogoutAsync();
     }
 }

@@ -16,7 +16,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\NoteMicroservice.Note.Domain\NoteMicroservice.Note.Domain.csproj" />
-      <ProjectReference Include="..\NoteMicroservice.Note.Infrastructure\NoteMicroservice.Note.Infrastructure.csproj" />
       <ProjectReference Include="..\NoteMicroservice.ServiceDefaults\NoteMicroservice.ServiceDefaults.csproj" />
     </ItemGroup>
 

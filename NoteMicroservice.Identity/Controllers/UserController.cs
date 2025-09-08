@@ -37,7 +37,7 @@ namespace NoteMicroservice.Identity.Controllers
 			{
 				var identityId = this.GetUserId();
 				var res = await _userRepository.Search(identityId, search);
-				return Ok(res);git 
+				return Ok(res);
 			}
 			catch(Exception ex)
 			{
@@ -50,6 +50,13 @@ namespace NoteMicroservice.Identity.Controllers
 		public async Task<IActionResult> Get(string id)
 		{
 			var res = await _userService.GetUserByIdAsync(id);
+			return Ok(res);
+		}
+		
+		[HttpGet("get-all")]
+		public async Task<IActionResult> GetAll()
+		{
+			var res = await _userService.GetAllUsersAsync();
 			return Ok(res);
 		}
 

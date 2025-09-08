@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using NoteMicroservice.Note.Infrastructure.Context;
 using System.Text;
 using Hangfire;
 using Hangfire.SqlServer;
@@ -10,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using NoteMicroservice.Notification;
+using NoteDbContext = NoteMicroservice.Note.Domain.Context.NoteDbContext;
 
 var builder = WebApplication.CreateBuilder(args);
 
