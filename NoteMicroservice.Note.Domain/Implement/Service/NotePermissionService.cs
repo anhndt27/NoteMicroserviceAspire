@@ -62,6 +62,4 @@ public class NotePermissionService : INotePermissionService
          }
          // Nếu không tìm thấy bản ghi, không làm gì cả hoặc log cảnh báo
      }
-
-  
 }

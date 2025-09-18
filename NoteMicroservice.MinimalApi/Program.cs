@@ -5,6 +5,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Polly;
 using System.Text;
+using NoteMicroservice.ServiceDefaults;
 
 public class Program
 {
