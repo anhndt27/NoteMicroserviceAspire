@@ -4,6 +4,11 @@ using NoteMicroservice.Note.API;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using NoteMicroservice.Note.Domain.Abstract.Repository;
+using NoteMicroservice.Note.Domain.Abstract.Service;
+using NoteMicroservice.Note.Domain.Implement.Service;
+using NoteMicroservice.Note.Domain.Repository;
+using NoteMicroservice.ServiceDefaults;
 using NoteDbContext = NoteMicroservice.Note.Domain.Context.NoteDbContext;
 
 public class Program
@@ -21,7 +26,9 @@ public class Program
         builder.Services.AddDbContext<NoteDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-        builder.Services.DependencyInjectionCore();
+        builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
+        builder.Services.AddScoped<INoteService, NoteService>();
+        builder.Services.AddScoped<INotePermissionService, NotePermissionService>();
 
         builder.Services.AddEndpointsApiExplorer();
 

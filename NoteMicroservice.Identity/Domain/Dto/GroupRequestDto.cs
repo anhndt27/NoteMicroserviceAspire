@@ -30,8 +30,7 @@ namespace NoteMicroservice.Identity.Domain.Dto
         public override bool TryCreateSingleQuery(ApplicationDbContext context, out IQueryable<Group> query)
         {
             query = context.Groups.AsNoTracking()
-                .Include(e => e.CreatedByUser)
-                .Include(e => e.UpdatedByUser)
+                .Include(e => e.UserGroups)
                 .AsQueryable();
             
             query = CreateBaseSortQuery(query);
@@ -44,11 +43,5 @@ namespace NoteMicroservice.Identity.Domain.Dto
     {
         public List<string> UserIds { get; set; }
         public string GroupId { get; set; }
-    }
-
-    public class JoinGroupDto
-    {
-        public string UserId { get; set;}
-        public string GroupCode { get; set; }
     }
 }

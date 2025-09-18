@@ -23,92 +23,42 @@ public class NotePermissionController : ControllerBase
         _permissionService = permissionService;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> AssignPermission(string noteContentId,
-        [FromBody] AssignPermissionRequest request)
+    [HttpGet]
+    public async Task<IActionResult> GetPermissions(string noteContentId)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         var requestingUserId = this.GetUserId();
-        var requestingGroupId = this.GetGroupIds();
-        if (string.IsNullOrEmpty(requestingUserId))
-        {
-            return Unauthorized();
-        }
-
+ 
         try
         {
-            await _permissionService.AssignNotePermissionAsync(
-                requestingUserId,
-                requestingGroupId,
-                noteContentId,
-                request.PrincipalType,
-                request.PrincipalId,
-                request.PermissionType,
-                request.AccessLevel
+            var permissions = await _permissionService.GetNotePermissionsAsync(
+                requestingUserId, 
+                noteContentId
             );
-
-            return Ok(new { message = "Permission assigned successfully." });
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Forbid(ex.Message);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
+        
+            return Ok(permissions);
         }
         catch (Exception ex)
         {
-            return StatusCode(500,
-                "An error occurred while assigning permission.");
+            return StatusCode(500, "An error occurred while retrieving permissions.");
         }
     }
 
-    [HttpDelete]
-    public async Task<IActionResult> RevokePermission(string noteContentId,
-        [FromBody] AssignPermissionRequest request)
+    [HttpPut]
+    public async Task<IActionResult> UpdatePermission([FromBody] PermissionRequestDto request)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         var requestingUserId = this.GetUserId();
-        var requestingGroupId = this.GetGroupIds();
-
-        if (string.IsNullOrEmpty(requestingUserId))
-        {
-            return Unauthorized();
-        }
-
+    
         try
         {
-            await _permissionService.RevokeNotePermissionAsync(
-                requestingUserId,
-                requestingGroupId,
-                noteContentId,
-                request.PrincipalType,
-                request.PrincipalId,
-                request.PermissionType
+            await _permissionService.UpdateNotePermissionAsync(
+                requestingUserId, request
             );
 
-            return Ok(new { message = "Permission revoked successfully." });
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Forbid(ex.Message);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
+            return Ok(new { message = "Permission updated successfully." });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, "An error occurred while revoking permission.");
+            return StatusCode(500, "An error occurred while updating permission.");
         }
     }
 }

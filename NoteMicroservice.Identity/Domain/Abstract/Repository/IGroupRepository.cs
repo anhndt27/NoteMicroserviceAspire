@@ -9,6 +9,6 @@ namespace NoteMicroservice.Identity.Domain.Abstract.Repository
 		Task<ResponseMessage> OutGroup(string identityId, ReactGroupDto request);
 		Task<ResponseMessage> CreateGroup(string identityId, GroupRequestDto request);
 		Task<PaginatedListDto<GroupResponseDto>> SearchGroup (string identityId, GroupSearchRequestDto request);
-		Task<List<GroupResponseDto>> GetAllGroups(string identityId);
+		Task<ResponseMessage> DeleteGroup(string identityId, string id);
 	}
 }

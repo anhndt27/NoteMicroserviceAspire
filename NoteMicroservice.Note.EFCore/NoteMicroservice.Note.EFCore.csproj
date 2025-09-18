@@ -23,4 +23,8 @@
     <ProjectReference Include="..\NoteMicroservice.Note.Domain\NoteMicroservice.Note.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Infrastructure\Migrations\" />
+  </ItemGroup>
+
 </Project>

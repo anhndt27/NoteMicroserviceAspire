@@ -1,92 +1,181 @@
-﻿using NoteMicroservice.Note.Domain.Abstract.Repository;
+﻿using System.Collections.Immutable;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using NoteMicroservice.Note.Domain.Abstract.Repository;
 using NoteMicroservice.Note.Domain.Abstract.Service;
-using NoteMicroservice.Note.Domain.Entity;
-using NoteMicroservice.Note.Domain.Dto;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
+using NoteMicroservice.Note.Domain.Context;
 using NoteMicroservice.Note.Domain.Dtos;
 using NoteMicroservice.Note.Domain.Dtos.BaseDtos;
+using NoteMicroservice.Note.Domain.Entity;
 using NoteMicroservice.Note.Domain.Extensions;
-using NoteMicroservice.Note.Domain.ViewModel;
-using NoteDbContext = NoteMicroservice.Note.Domain.Context.NoteDbContext;
+using NoteMicroservice.Note.Domain.Resources;
 
-namespace NoteMicroservice.Note.Domain.Implement.Service
+namespace NoteMicroservice.Note.Domain.Implement.Service;
+
+public class NoteService : INoteService
 {
-	public class NoteService : INoteService
-	{
-		private readonly INoteRepository _noteRepository;
-		private readonly IRepository<NoteContent> _repository;
-		private readonly NoteDbContext _context;
-		public NoteService(IRepository<NoteContent> repository, INoteRepository noteRepository, NoteDbContext context)
-		{
-			_repository = repository;
-			_noteRepository = noteRepository;
-			_context = context;
-		}
+    private readonly NoteDbContext _context;
+    private readonly IPermissionRepository _permissionRepository;
+    private readonly IStringLocalizer<CommonTitles> _title;
+    private readonly IStringLocalizer<CommonMessages> _message;
 
-		public async Task<bool> CreateNote(string userId, NoteRequestDto request)
-		{
-			await _repository.AddAsync(new NoteContent() { 
-				NoteString = request.NoteString,
-				Title = request.Title,
-				DateTime = DateTime.Now,
-			});
+    public NoteService(NoteDbContext context, IPermissionRepository permissionRepository,
+        IStringLocalizer<CommonMessages> message, IStringLocalizer<CommonTitles> title)
+    {
+        _context = context;
+        _permissionRepository = permissionRepository;
+        _message = message;
+        _title = title;
+    }
 
-			return true;
-		}
+    public async Task<ResponseMessage> CreateNote(string userId, string email, string groupId, NoteRequestDto request)
+    {
+        _context.SetOperatingUser(userId);
 
-		public async Task<bool> DeleteNote(string id)
-		{
-			var res = await _repository.GetByIdAsync(id);
+        var noteContent = new NoteContent
+        {
+            Title = request.Title,
+            NoteString = request.NoteString,
+            NoteContentPermissions = new List<NoteContentPermission>()
+        };
 
-			await _repository.DeleteAsync(res); 
+        if (!string.IsNullOrEmpty(groupId))
+        {
+            noteContent.NoteContentPermissions.Add(new NoteContentPermission
+            {
+                GroupId = groupId,
+            });
+        }
 
-			return true;
-		}
+        if (!string.IsNullOrEmpty(email))
+        {
+            noteContent.NoteContentPermissions.Add(new NoteContentPermission
+            {
+                Email = email,
+            });
+        }
 
-		public async Task<NoteResponseDto> GetNote(string id)
-		{
-			var res = await _repository.GetByIdAsync(id);
+        _context.NoteContents.Add(noteContent);
 
-			return new NoteResponseDto()
-			{
-				Id = id,
-				NoteString = res.NoteString,
-				Title = res.Title,
-				DateTime = res.DateTime
-			}; 
-		}
+        var changeCount = await _context.SaveChangesAsync();
+        if (changeCount > 0)
+        {
+            return ResponseMessage.AddedSuccess(_title, _message);
+        }
 
-		public async Task<PaginatedListDto<NoteDtos>> Search(string userId, List<string> groupIds, NoteSearchDto searchDto)
-		{
-			searchDto.TryCreateSingleQuery(_context, out IQueryable<NoteContent> query);
+        return ResponseMessage.AddedSuccess(_title, _message);
+    }
 
-			var paginationDto = await query.CreatePaginationAsync(searchDto.PageIndex, searchDto.PageSize,
-				e => new NoteDtos()
-				{
-					Id = e.Id,
-					Title = e.Title,
-					Content = e.NoteString,
-				}, false);
+    public async Task<ResponseMessageDto<NoteDtos>> GetNote(string id, string email,
+        List<string> groupId)
+    {
+        var hasAccess = await _permissionRepository.HasAccessAsync(id, email, groupId);
+        if (!hasAccess)
+        {
+            return new ResponseMessageDto<NoteDtos>(MessageType.Error, _title["Unauthorized"],
+                _message["Unauthorized"]);
+        }
+        
+        var note = await _context.NoteContents
+            .Where(n => n.Id == id)
+            .FirstOrDefaultAsync();
 
-			return paginationDto;
-		}
+        if (note == null)
+        {
+            return new ResponseMessageDto<NoteDtos>(MessageType.Success)
+            {
+                Dto = null
+            };
+        }
 
-		public async Task<bool> UpdateNote(string id, NoteReactDto request)
-		{
+        var noteDto = new NoteDtos
+        {
+            Title = note.Title,
+            NoteString = note.NoteString,
+        };
 
-			var res = await _repository.GetByIdAsync(id);
+        return new ResponseMessageDto<NoteDtos>(MessageType.Success)
+        {
+            Dto = noteDto
+        };
+    }
 
-			res.Title = request.Title;
-			res.NoteString = request.NoteString;
-			res.DateTime = DateTime.Now;
-			await _repository.UpdateAsync(res);
+    public async Task<ResponseMessage> UpdateNote(string id, string userId, string email, List<string> groupId,
+        NoteRequestDto request)
+    {
+        var hasAccess = await _permissionRepository.HasAccessAsync(id, email, groupId);
+        if (!hasAccess)
+        {
+            return ResponseMessage.Unauthorized(_title, _message);
+        }
+        
+        _context.SetOperatingUser(userId);
 
-			return true;
-		}
-	}
+        var note = await _context.NoteContents
+            .Where(n => n.Id == id && !n.IsDeleted)
+            .FirstOrDefaultAsync();
+
+        if (note == null)
+        {
+            return ResponseMessage.DataNotFound(_title, _message);
+        }
+
+        note.Title = request.Title;
+        note.NoteString = note.NoteString;
+
+        var changeCount = await _context.SaveChangesAsync();
+        if (changeCount > 0)
+        {
+            return ResponseMessage.UpdatedSuccess(_title, _message);
+        }
+
+        return ResponseMessage.NoRecordUpdated(_title, _message);
+    }
+
+    public async Task<ResponseMessage> DeleteNote(string id, string userId, string email, List<string> groupId)
+    {
+        var hasAccess = await _permissionRepository.HasAccessAsync(id, email, groupId);
+        if (!hasAccess)
+        {
+            return ResponseMessage.Unauthorized(_title, _message);
+        }
+        
+        _context.SetOperatingUser(userId);
+
+        var note = await _context.NoteContents
+            .Include(e => e.NoteContentPermissions)
+            .Where(n => n.Id == id && !n.IsDeleted)
+            .FirstOrDefaultAsync();
+
+        if (note == null)
+        {
+            return ResponseMessage.DataNotFound(_title, _message);
+        }
+
+        _context.NoteContentPermissions.RemoveRange(note.NoteContentPermissions);
+        _context.NoteContents.Remove(note);
+
+        var changeCount = await _context.SaveChangesAsync();
+        if (changeCount > 0)
+        {
+            return ResponseMessage.DeletedSuccess(_title, _message);
+        }
+
+        return ResponseMessage.NoRecordDeleted(_title, _message);
+    }
+
+    public async Task<ResponseMessageDto<PaginatedListDto<NoteSimpleResponseDto>>> Search(string email, List<string> groupIds, NoteSearchDto searchDto)
+    {
+        searchDto.Email = email;
+        searchDto.GroupIds = groupIds;
+        
+        searchDto.TryCreateSingleQuery(_context, out IQueryable<NoteContent> query);
+        var paginationDto = await query.CreatePaginationAsync(searchDto.PageIndex, searchDto.PageSize,
+            e => e.ToNoteSimpleResponseDto());
+
+        return new ResponseMessageDto<PaginatedListDto<NoteSimpleResponseDto>>(MessageType.Success)
+        {
+            Dto = paginationDto
+        };
+    }
 }

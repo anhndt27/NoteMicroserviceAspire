@@ -17,6 +17,7 @@ using NoteMicroservice.Identity.Domain.Constants;
 using NoteMicroservice.Identity.Domain.Dto;
 using NoteMicroservice.Identity.Domain.Implement.Repository;
 using NoteMicroservice.Identity.Domain.Implement.Service;
+using NoteMicroservice.ServiceDefaults;
 
 public class Program
 {
@@ -28,9 +29,6 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-
-        builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -70,7 +68,6 @@ public class Program
             options.SupportedUICultures = supportedCultures;
         });
         
-        builder.Services.DependencyInjectionCore();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
         {
@@ -101,11 +98,8 @@ public class Program
         builder.Services.AddControllers();
         
         // DI
-        builder.Services.AddScoped<JwtTokenGenerator>();
         builder.Services.AddScoped<IAuthenticationsAsyncService, AuthenticationsAsyncService>();
-        builder.Services.AddScoped<IGroupService, GroupService>();
         builder.Services.AddScoped<IGroupRepository, GroupRepository >();
-        builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IUserRepository, UserRepository >();
         
         builder.AddServiceDefaults();

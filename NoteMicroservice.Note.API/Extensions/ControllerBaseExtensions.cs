@@ -15,6 +15,11 @@ namespace NoteMicroservice.Note.API.Extensions
             return controller.User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
         
+        public static string GetEmail(this ControllerBase controller)
+        {
+            return controller.User.FindFirstValue(ClaimTypes.Email);
+        }
+        
         public static List<string> GetGroupIds(this ControllerBase controller)
         {
             return controller.User.FindAll(ClaimTypes.GroupSid)

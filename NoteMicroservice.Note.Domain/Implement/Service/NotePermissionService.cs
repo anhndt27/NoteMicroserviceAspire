@@ -1,65 +1,86 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using NoteMicroservice.Note.Domain.Abstract.Repository;
 using NoteMicroservice.Note.Domain.Abstract.Service;
+using NoteMicroservice.Note.Domain.Context;
+using NoteMicroservice.Note.Domain.Dtos;
+using NoteMicroservice.Note.Domain.Dtos.BaseDtos;
 using NoteMicroservice.Note.Domain.Entity;
+using NoteMicroservice.Note.Domain.Resources;
 
 namespace NoteMicroservice.Note.Domain.Implement.Service;
 
 public class NotePermissionService : INotePermissionService
 {
-    private readonly IPermissionRepository _permissionRepository;
-
-    public NotePermissionService(IPermissionRepository permissionRepository)
+    private readonly NoteDbContext _context;
+    private readonly IStringLocalizer<CommonTitles> _title;
+    private readonly IStringLocalizer<CommonMessages> _message;
+    public NotePermissionService(NoteDbContext context, IStringLocalizer<CommonMessages> message, IStringLocalizer<CommonTitles> title)
     {
-        _permissionRepository = permissionRepository;
+        _context = context;
+        _message = message;
+        _title = title;
     }
 
-    public async Task AssignNotePermissionAsync(string requestingUserId, List<string> groupIds, string noteContentId, PrincipalType principalType, string principalIdToAssign, Permissions permissionTypeToAssign, AccessLevel accessLevelToAssign)
+    public async Task<ResponseMessageDto<PermissionResponseDto>> GetNotePermissionsAsync(string requestingUserId, string noteContentId)
     {
-        if (!await _permissionRepository.HasPermissionAsync(requestingUserId, groupIds, noteContentId, Permissions.ManagePermissions))
-        {
-            throw new UnauthorizedAccessException($"User {requestingUserId} does not have permission to manage permissions for note {noteContentId}.");
-        }
+        var notePermissionResponse = await _context.NoteContentPermissions
+            .Where(p => p.NoteId == noteContentId)
+            .ToListAsync();
 
-        // **Bước 2: Thực hiện logic gán/cập nhật quyền**
-        // Tìm xem đã có bản ghi quyền này chưa
-        var existingPermission = await _permissionRepository.GetPermissionAsync(noteContentId, principalType, principalIdToAssign, permissionTypeToAssign);
-
-        if (existingPermission != null)
+        if (!notePermissionResponse.Any())
         {
-            // Nếu có, cập nhật mức độ truy cập
-            existingPermission.AccessLevel = accessLevelToAssign;
-            // Có thể cập nhật trường UpdatedByUserId và UpdatedTimeUtc
-            await _permissionRepository.UpdatePermissionAsync(existingPermission);
-        }
-        else
-        {
-            // Nếu chưa có, tạo bản ghi mới
-            var newPermission = new NoteContentPermission
+            return new ResponseMessageDto<PermissionResponseDto>(MessageType.Success)
             {
-                NoteId = noteContentId,
-                PrincipalType = principalType, // Lưu giá trị int của Enum
-                PrincipalId = principalIdToAssign,
-                Permission = permissionTypeToAssign, // Lưu giá trị int của Enum
-                AccessLevel = accessLevelToAssign, // Lưu giá trị int của Enum
+                Dto = null
             };
-            await _permissionRepository.AddPermissionAsync(newPermission);
         }
+        
+        var notePermission = notePermissionResponse.ToPermissionResponseDto();
+
+        return new ResponseMessageDto<PermissionResponseDto>(MessageType.Success)
+        {
+            Dto = notePermission
+        };
     }
 
-     public async Task RevokeNotePermissionAsync(string requestingUserId, List<string> groupIds, string noteContentId, PrincipalType principalType, string principalIdToRevoke, Permissions permissionTypeToRevoke)
-     {
-         if (!await _permissionRepository.HasPermissionAsync(requestingUserId, groupIds, noteContentId, Permissions.ManagePermissions))
-         {
-             throw new UnauthorizedAccessException($"User {requestingUserId} does not have permission to manage permissions for note {noteContentId}.");
-         }
-      
-         var permissionToRemove = await _permissionRepository.GetPermissionAsync(noteContentId, principalType, principalIdToRevoke, permissionTypeToRevoke);
+    public async Task<ResponseMessage> UpdateNotePermissionAsync(string requestingUserId, PermissionRequestDto request)
+    {
+        var existingPermissions = await _context.NoteContentPermissions
+            .Where(p => p.NoteId == request.NoteId)
+            .ToListAsync();
 
-         if (permissionToRemove != null)
-         {
-             await _permissionRepository.DeletePermissionAsync(permissionToRemove);
-              // **Bước 3: (Tùy chọn) Clear cache liên quan**
-         }
-         // Nếu không tìm thấy bản ghi, không làm gì cả hoặc log cảnh báo
-     }
+        _context.NoteContentPermissions.RemoveRange(existingPermissions);
+
+        if (request.Emails != null)
+        {
+            foreach (var email in request.Emails)
+            {
+                _context.NoteContentPermissions.Add(new NoteContentPermission
+                {
+                    NoteId = request.NoteId,
+                    Email = email,
+                });
+            }
+        }
+
+        if (request.GroupIds != null)
+        {
+            foreach (var groupId in request.GroupIds)
+            {
+                _context.NoteContentPermissions.Add(new NoteContentPermission
+                {
+                    NoteId = request.NoteId,
+                    GroupId = groupId,
+                });
+            }
+        }
+
+        var changeCount = await _context.SaveChangesAsync();
+        if (changeCount > 0)
+        {
+            return ResponseMessage.UpdatedSuccess(_title, _message);
+        }
+        return ResponseMessage.NoRecordUpdated(_title, _message);
+    }
 }

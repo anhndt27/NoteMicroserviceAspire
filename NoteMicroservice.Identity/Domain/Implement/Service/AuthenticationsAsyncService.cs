@@ -32,44 +32,36 @@ namespace NoteMicroservice.Identity.Domain.Implement.Service
 
         public async Task<LoginResponseDto> Login(LoginRequestDto request)
         {
-            try
-            {
-                var user = await _dbContext.Users
-                    .Include(u => u.UserGroups).ThenInclude(ug => ug.Group)
-                    .FirstOrDefaultAsync(u => u.UserName == request.UserName);
-                var groupIds = await _userRepository.GetUserGroupIdsAsync(user.Id);
+            var user = await _dbContext.Users
+                .Include(u => u.UserGroups).ThenInclude(ug => ug.Group)
+                .FirstOrDefaultAsync(u => u.UserName == request.UserName);
+            var groupIds = await _userRepository.GetUserGroupIdsAsync(user.Id);
                 
-                if (VerifyPassword(request.Password, user.Password))
-                {
-                    var token = _jwtTokenGenerator.GenerateToken(user.Id, groupIds);
-                    return new LoginResponseDto()
-                    {
-                        UserId = user.Id,
-                        UserName = request.UserName,
-                        Token = token,
-                        GroupIds = user.UserGroups?.Select(ug => ug.Group?.Id).ToList(),
-                        GroupNames = user.UserGroups?.Select(ug => ug.Group?.Name).ToList()
-                    };
-                }
-
+            if (VerifyPassword(request.Password, user.Password))
+            {
+                var token = _jwtTokenGenerator.GenerateToken(user.Id, groupIds);
                 return new LoginResponseDto()
                 {
+                    UserId = user.Id,
                     UserName = request.UserName,
-                    Token = "Fail"
+                    Token = token,
+                    GroupIds = user.UserGroups?.Select(ug => ug.Group?.Id).ToList(),
+                    GroupNames = user.UserGroups?.Select(ug => ug.Group?.Name).ToList()
                 };
             }
-            catch (Exception e)
+
+            return new LoginResponseDto()
             {
-                Console.WriteLine(e);
-                throw;
-            }
+                UserName = request.UserName,
+                Token = ""
+            };
         }
         
         public async Task<string> Register(RegisterRequestDto request)
         {
             if (await _dbContext.Users.AnyAsync(u => u.UserName == request.Username || u.Email == request.Email))
             {
-                return "Username hoặc Email đã tồn tại"; // Thông báo lỗi
+                return "Username hoặc Email đã tồn tại";
             }
 
             var user = new User

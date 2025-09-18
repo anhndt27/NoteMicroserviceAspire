@@ -7,7 +7,7 @@ public class UserGroups : BaseModel, IUserTrackableModels, ITimeTrackableModel, 
 
     public string GroupId { get; set; }
     public Group Group { get; set; }
-    
+
     public string CreatedByUserId { get; set; }
     public User CreatedByUser { get; set; }
     public string UpdatedByUserId { get; set; }
@@ -18,4 +18,12 @@ public class UserGroups : BaseModel, IUserTrackableModels, ITimeTrackableModel, 
     public DateTimeOffset? DeletedTimeUtc { get; set; }
     public string DeletedByUserId { get; set; }
     public User DeletedByUser { get; set; }
+    public Status Status { get; set; }
+}
+
+public enum Status
+{
+    Active,
+    Inactive,
+    Pending
 }

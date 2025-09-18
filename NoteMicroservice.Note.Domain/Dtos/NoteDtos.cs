@@ -10,78 +10,110 @@ namespace NoteMicroservice.Note.Domain.Dtos;
 public class NoteDtos : EntityDto
 {
     public string Title { get; set; }
-    public string Content { get; set; }
+    public string NoteString { get; set; }
+}
+
+public class NoteRequestDto
+{
+    public string Title { get; set; }
+    public string NoteString { get; set; }
+}
+
+public class NoteSimpleResponseDto : EntityDto
+{
+    public string Title { get; set; }
 }
 
 public class NoteSearchDto : SearchRequestDto<NoteContent>
 {
+    public string Email { get; set; }
+    public List<string> GroupIds { get; set; }
+    
     public override List<string> OrderByValues  {
         get
         {
             var values = BaseOrderValues;
-            values.AddRange([]);
             return values;
         }
     }
     
-    public DtoValidationResult Validate(IStringLocalizer<CommonTitles> commonTitle, IStringLocalizer<CommonMessages> commonMessage)
-    {
-        var result = ValidateBaseProperties(commonTitle, commonMessage);
-        if (!result.IsValid)
-        {
-            return result;
-        }
-
-        return result;
-    }
-    
     public IQueryable<NoteContent> CreateSearchQuery(NoteDbContext context)
     {
-        try
+        var query = context.NoteContents
+            .Include(e => e.NoteContentPermissions)
+            .AsNoTracking()
+            .AsQueryable();
+
+        query = CreateBaseSearchQuery(query);
+
+        if (!string.IsNullOrEmpty(SearchText))
         {
-            var query = context.NoteContents
-                .Include(e => e.NoteContentPermissions)
-                .AsNoTracking()
-                .AsQueryable();
-
-            query = CreateBaseSearchQuery(query);
-
-            if (!string.IsNullOrEmpty(SearchText))
-            {
-                var lowerCaseSearchText = SearchText.ToLower().Trim();
-                query = query.Where(e => e.NoteString.ToLower().Contains(lowerCaseSearchText) || e.Title.ToLower().Contains(lowerCaseSearchText));
-            }
-            if (SearchTexts != null && SearchTexts.Any())
-            {
-                query = query.Where(e => SearchTexts.Contains(e.Title));
-            }
-
-            return query;
+            var lowerCaseSearchText = SearchText.ToLower().Trim();
+            query = query.Where(e => e.NoteString.ToLower().Contains(lowerCaseSearchText) || e.Title.ToLower().Contains(lowerCaseSearchText));
         }
-        catch (Exception ex)
+        
+        if (SearchTexts != null && SearchTexts.Any())
         {
-            throw;
+            query = query.Where(e => SearchTexts.Contains(e.Title));
         }
+
+        if (string.IsNullOrEmpty(Email))
+        {
+            query = query.Where(e => e.NoteContentPermissions.Any(x => x.Email.Equals(Email)));
+        }
+        
+        if (GroupIds != null && GroupIds.Any())
+        {
+            query = query.Where(e => e.NoteContentPermissions.Any(x => GroupIds.Contains(x.GroupId)));
+        }
+
+        return query;
     }
     
     public override bool TryCreateSingleQuery(NoteDbContext context, out IQueryable<NoteContent> query)
     {
-        try
-        {
-            query = CreateSearchQuery(context);
+        query = CreateSearchQuery(context);
             
-            query = CreateBaseSortQuery(query);
-            switch (OrderBy)
-            {
-                case "Title":
-                    break;
-            }
-            return true;
-        }
-        catch (Exception ex)
+        query = CreateBaseSortQuery(query);
+        switch (OrderBy)
         {
-            query = default;
-            return false;
+            case "Title":
+                break;
         }
+        return true;
+    }
+}
+
+public static class NoteExtensions
+{
+    public static NoteDtos ToNoteDto(this NoteContent entity)
+    {
+        var dto = new NoteDtos();
+        if (entity == null)
+        {
+            return null;
+        }
+
+        dto.MapBaseProperties(entity);
+    
+        dto.Title = entity.Title;
+        dto.NoteString = entity.NoteString;
+        
+
+        return dto;
+    }
+    
+    public static NoteSimpleResponseDto ToNoteSimpleResponseDto(this NoteContent entity)
+    {
+        var dto = new NoteSimpleResponseDto();
+        if (entity == null)
+        {
+            return null;
+        }
+        
+        dto.MapBaseProperties(entity);
+        dto.Title = entity.Title;
+
+        return dto;
     }
 }

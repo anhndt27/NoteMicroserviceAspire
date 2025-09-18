@@ -16,14 +16,12 @@ namespace NoteMicroservice.Identity.Controllers
 	[Authorize]
 	public class GroupController : ControllerBase
 	{
-		private readonly IGroupService _groupService;
 		private readonly IGroupRepository _groupRepository;
 		private readonly ILogger<GroupController> _logger;
 		private readonly IStringLocalizer<CommonTitles> _commonTitles;
 		private readonly IStringLocalizer<CommonMessages> _commonMessages;
-		public GroupController(IGroupService groupService, IGroupRepository groupRepository, ILogger<GroupController> logger, IStringLocalizer<CommonMessages> commonMessages, IStringLocalizer<CommonTitles> commonTitles)
+		public GroupController(IGroupRepository groupRepository, ILogger<GroupController> logger, IStringLocalizer<CommonMessages> commonMessages, IStringLocalizer<CommonTitles> commonTitles)
 		{
-			_groupService = groupService;
 			_groupRepository = groupRepository;
 			_logger = logger;
 			_commonMessages = commonMessages;
@@ -95,33 +93,18 @@ namespace NoteMicroservice.Identity.Controllers
 			}
 		}
 
-		[HttpGet("Get")]
-		public async Task<IActionResult> GetGroupCode(int id)
-		{
-			try
-			{
-				var res = await _groupService.CreateCodeJoinGroup(id);
-				return Ok(res);
-			}
-			catch(Exception ex)
-			{
-				_logger.LogError(ex, "Exception when get group code Dto: {@id}", id);
-				return this.InternalServerError(ResponseMessage.SomethingWrong(_commonTitles, _commonMessages));
-			}
-		}
-		
-		[HttpGet("Get-All")]
-		public async Task<IActionResult> GetAll()
+		[HttpDelete("Delete")]
+		public async Task<IActionResult> DeleteGroup(string id)
 		{
 			try
 			{
 				var identityId = this.GetUserId();
-				var res = await _groupRepository.GetAllGroups(identityId);
+				var res = await _groupRepository.DeleteGroup(identityId, id);
 				return Ok(res);
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Exception when get all group");
+				_logger.LogError(ex, "Exception when delete group Dto: {@string}", id);
 				return this.InternalServerError(ResponseMessage.SomethingWrong(_commonTitles, _commonMessages));
 			}
 		}

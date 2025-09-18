@@ -2,13 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using NoteMicroservice.Note.Domain.Abstract.Service;
-using NoteMicroservice.Note.Domain.Dto;
-using OpenTelemetry.Trace;
-using System.Diagnostics.Metrics;
-using System;
 using NoteMicroservice.Note.API.Extensions;
 using NoteMicroservice.Note.Domain.Dtos;
-using NoteMicroservice.Note.Domain.ViewModel;
 
 namespace NoteMicroservice.Note.API.Controller
 {
@@ -42,13 +37,14 @@ namespace NoteMicroservice.Note.API.Controller
 		}
 
         [HttpPost("Create")]
-        public async Task<IActionResult> Create(NoteRequestDto request)
+        public async Task<IActionResult> Create(string groupId, NoteRequestDto request)
         {
             try
             {
                 var userId = this.GetUserId();
+                var email = this.GetEmail();
                 
-                var res = await _noteService.CreateNote(userId, request);
+                var res = await _noteService.CreateNote(userId, email, groupId, request);
                 return Ok(res);
             }
             catch (Exception e)
@@ -62,10 +58,10 @@ namespace NoteMicroservice.Note.API.Controller
         {
             try
             {
-                var userId = this.GetUserId();
+                var email = this.GetEmail();
                 var groupIds = this.GetGroupIds();
 
-                var res = await _noteService.GetNote(id);
+                var res = await _noteService.GetNote(id, email, groupIds);
               
                 return Ok(res);
             }
@@ -76,14 +72,15 @@ namespace NoteMicroservice.Note.API.Controller
         }
 
         [HttpPut("Update")]
-        public async Task<IActionResult> Update(string id, NoteReactDto request)
+        public async Task<IActionResult> Update(string id, NoteRequestDto request)
         {
             try
             {
                 var userId = this.GetUserId();
+                var email = this.GetEmail();
                 var groupIds = this.GetGroupIds();
                 
-                var res = await _noteService.UpdateNote(id, request);
+                var res = await _noteService.UpdateNote(id, userId, email, groupIds, request);
                 return Ok(res);
             }
             catch
@@ -98,9 +95,10 @@ namespace NoteMicroservice.Note.API.Controller
             try
             {
                 var userId = this.GetUserId();
+                var email = this.GetEmail();
                 var groupIds = this.GetGroupIds();
                 
-                var res = await _noteService.DeleteNote(id);
+                var res = await _noteService.DeleteNote(id, userId, email, groupIds);
                 return Ok(res);
             }
             catch
@@ -108,6 +106,5 @@ namespace NoteMicroservice.Note.API.Controller
                 return BadRequest("Fails");
             }
         }
-
 	}
 }

@@ -16,9 +16,20 @@ public static class GroupExtensions
     {
         var dto = new GroupResponseDto();
 			
+        dto.MapBaseProperties(group);
         dto.Name = group.Name;
         dto.Users = group.UserGroups?.Select(e => e.User.ToUserResponseDto()).ToList();
+        dto.CountUser = group.UserGroups?.Count() ?? 0;
+        return dto;
+    }
+    
+    public static GroupResponseDto ToSearchGroupResponseDto(this Group group)
+    {
+        var dto = new GroupResponseDto();
+			
         dto.MapBaseProperties(group);
+        dto.Name = group.Name;
+        dto.CountUser = group.UserGroups?.Count() ?? 0;
         return dto;
     }
 }
